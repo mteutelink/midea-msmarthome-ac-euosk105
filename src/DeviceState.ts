@@ -84,10 +84,6 @@ export class DeviceState {
 		//  33: "Refrigerant leakage protection"
 	private _statusCode: number = 0;
 
-	constructor() {
-	}
-
-
 	// POWERON
 	get powerOn() {
 		return this._powerOn;

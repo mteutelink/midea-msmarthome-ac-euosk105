@@ -3,7 +3,7 @@
 import { FRAME_TYPE } from '../Constants';
 import { Device } from "../Device";
 import { SecurityContext } from '../SecurityContext';
-import { logger } from '../Logger';
+import { _LOGGER } from '../Logger';
 import { GetCapabilitiesResponse } from './GetCapabilitiesResponse';
 import { LANCommand } from './LANCommand';
 
@@ -15,7 +15,7 @@ export class GetCapabilitiesCommand extends LANCommand {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<GetCapabilitiesResponse> {
-		logger.info("GetCapabilitiesCommand::execute()");
+		_LOGGER.info("GetCapabilitiesCommand::execute()");
 		let response = await super.execute(securityContext);
 		
 		let getCapabilitiesResponse: GetCapabilitiesResponse = new GetCapabilitiesResponse(response[0]);

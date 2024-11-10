@@ -4,7 +4,7 @@ import { MSMARTHOME_APP_ID, MSMARTHOME_FORMAT, MSMARTHOME_CLIENT_TYPE, MSMARTHOM
 import { Security } from './Security';
 import { DeviceContext } from './DeviceContext';
 import { SecurityContext } from './SecurityContext';
-import { logger } from './Logger';
+import { _LOGGER } from './Logger';
 import crypto from 'crypto';
 import dateFormat from 'dateformat';
 
@@ -44,7 +44,7 @@ export class CloudConnection {
 	}
 
 	private _createRequest(data: {}): {} {
-		logger.info("CloudConnection::_createRequest()");
+		_LOGGER.info("CloudConnection::_createRequest()");
 		const body = {
 			appId: MSMARTHOME_APP_ID,
 			format: MSMARTHOME_FORMAT,
@@ -56,12 +56,12 @@ export class CloudConnection {
 			reqId: crypto.randomBytes(8).toString('hex')
 		};
 		Object.assign(body, data);
-		logger.debug("CloudConnection::_createRequest() = " + JSON.stringify(body));
+		_LOGGER.debug("CloudConnection::_createRequest() = " + JSON.stringify(body));
 		return body;
 	}
 
 	private async _executeRequest(endpoint: string, accessToken: string, body: any): Promise<any> {
-		logger.info("CloudConnection::_executeRequest()");
+		_LOGGER.info("CloudConnection::_executeRequest()");
 
 		try {
 			const random = crypto.randomBytes(16).toString('hex');
@@ -78,29 +78,29 @@ export class CloudConnection {
 			});
 			return await response.json();
 		} catch (error) {
-			logger.error("Error in CloudConnection::_executeRequest()", error);
+			_LOGGER.error("Error in CloudConnection::_executeRequest()", error);
 			throw error;
 		}
 	}
 
 	private async _getLoginId(account: string): Promise<string> {
-		logger.info("CloudConnection::_getLoginId()");
+		_LOGGER.info("CloudConnection::_getLoginId()");
 
 		try {
 			const response = await this._executeRequest("/v1/user/login/id/get", /*accessToken*/"", this._createRequest({
 				"loginAccount": account
 			}));
-			logger.http("CloudConnection::_getLoginId()::response = " + JSON.stringify(response));
-			logger.debug("CloudConnection::_getLoginId() = " + response.data.loginId);
+			_LOGGER.http("CloudConnection::_getLoginId()::response = " + JSON.stringify(response));
+			_LOGGER.debug("CloudConnection::_getLoginId() = " + response.data.loginId);
 			return response.data.loginId;
 		} catch (error) {
-			logger.error("Error in CloudConnection::_getLoginId()", error);
+			_LOGGER.error("Error in CloudConnection::_getLoginId()", error);
 			throw error;
 		}
 	}
 
 	private async _login(account: string, password: string, loginId: string): Promise<string> {
-		logger.info("CloudConnection::_login()");
+		_LOGGER.info("CloudConnection::_login()");
 
 		try {
 			const response = await this._executeRequest("/mj/user/login", /*accessToken*/"", {
@@ -120,39 +120,39 @@ export class CloudConnection {
 					stamp: dateFormat(new Date(), "yyyymmddHHMMss")
 				}
 			});
-			logger.http("CloudConnection::_login()::response = " + JSON.stringify(response));
-			logger.debug("CloudConnection::_login() = " + response.data.mdata.accessToken);
+			_LOGGER.http("CloudConnection::_login()::response = " + JSON.stringify(response));
+			_LOGGER.debug("CloudConnection::_login() = " + response.data.mdata.accessToken);
 			return response.data.mdata.accessToken;
 		} catch (error) {
-			logger.error("Error in CloudConnection::_login()", error);
+			_LOGGER.error("Error in CloudConnection::_login()", error);
 			throw error;
 		}
 	}
 
 	private async _getTokenAndKey(accessToken: string, udpId: string): Promise<TokenAndKey> {
-		logger.info("CloudConnection::_getTokenAndKey()");
+		_LOGGER.info("CloudConnection::_getTokenAndKey()");
 
 		try {
 			const response = await this._executeRequest("/v1/iot/secure/getToken", accessToken, this._createRequest({
 				udpid: udpId
 			}));
 
-			logger.http("CloudConnection::_getTokenAndKey()::response = " + JSON.stringify(response));
+			_LOGGER.http("CloudConnection::_getTokenAndKey()::response = " + JSON.stringify(response));
 
 			const tokenPair = response.data.tokenlist.find((pair: { udpId: string; token: string; key: string; }) => pair.udpId === udpId);
 			if (!tokenPair) {
-				logger.error(`Token and key for udpId ${udpId} not found.`);
+				_LOGGER.error(`Token and key for udpId ${udpId} not found.`);
 				throw new Error(`Token and key for udpId ${udpId} not found.`);
 			}
 			return new TokenAndKey(tokenPair.token, tokenPair.key);
 		} catch (error) {
-			logger.error("Error in CloudConnection::_getTokenAndKey()", error);
+			_LOGGER.error("Error in CloudConnection::_getTokenAndKey()", error);
 			throw error;
 		}
 	}
 
 	public async authenticate(account: string, password: string): Promise<SecurityContext> {
-		logger.info("CloudConnection::authenticate()");
+		_LOGGER.info("CloudConnection::authenticate()");
 
 		let securityContext = new SecurityContext(account, password);
 
@@ -172,16 +172,16 @@ export class CloudConnection {
 			securityContext.token = tokenAndKey.token;
 			securityContext.key = tokenAndKey.key;
 
-			logger.debug("CloudConnection::_authenticate() = " + JSON.stringify(securityContext));
+			_LOGGER.debug("CloudConnection::_authenticate() = " + JSON.stringify(securityContext));
 			return securityContext;
 		} catch (error) {
-			logger.error("Authentication failed:", error);
+			_LOGGER.error("Authentication failed:", error);
 			throw error;
 		}
 	}
 
 	public async executeCommand(securityContext: SecurityContext, endpoint: string, body: any) {
-		logger.info("CloudConnection::executeCommand()");
+		_LOGGER.info("CloudConnection::executeCommand()");
 		return this._executeRequest(endpoint, securityContext.cloudAccessToken, this._createRequest(body));
 	}
 }

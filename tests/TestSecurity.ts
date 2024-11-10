@@ -1,6 +1,6 @@
-import { MIDEA_MESSAGE_TYPE } from '../Constants';
-import { Security } from '../Security';
-import { SecurityContext } from '../SecurityContext';
+import { MIDEA_MESSAGE_TYPE } from '../src/Constants';
+import { Security } from '../src/Security';
+import { SecurityContext } from '../src/SecurityContext';
 
 jest.mock('crypto', () => {
 	const original = jest.requireActual('crypto');

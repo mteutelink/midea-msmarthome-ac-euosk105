@@ -4,7 +4,7 @@ import { DeviceContext } from './DeviceContext';
 import { SecurityContext } from './SecurityContext';
 import { CloudConnection } from './CloudConnection';
 import { LANConnection } from './LANConnection';
-import { logger } from './Logger';
+import { _LOGGER } from './Logger';
 
 export class Device {
 	private _deviceContext: DeviceContext;
@@ -30,7 +30,7 @@ export class Device {
 	}
 
 	public async authenticate(account: string, password: string): Promise<SecurityContext> {
-		logger.info("Device::authenticate()");
+		_LOGGER.info("Device::authenticate()");
 		this._cloudConnection = new CloudConnection(this._deviceContext);
 		return this._cloudConnection.authenticate(account, password).then(securityContext => {
 			return this._lanConnection.authenticate(securityContext);

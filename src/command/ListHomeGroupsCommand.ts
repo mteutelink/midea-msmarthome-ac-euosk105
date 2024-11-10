@@ -2,7 +2,7 @@
 
 import { Device } from "../Device";
 import { SecurityContext } from '../SecurityContext';
-import { logger } from '../Logger';
+import { _LOGGER } from '../Logger';
 import { CloudCommand } from './CloudCommand';
 import { ListHomeGroupsResponse } from "./ListHomeGroupsResponse";
 
@@ -12,7 +12,7 @@ export class ListHomeGroupsCommand extends CloudCommand {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<ListHomeGroupsResponse> {
-		logger.info("ListHomeGroupsCommand::execute()");
+		_LOGGER.info("ListHomeGroupsCommand::execute()");
 		const response = await super.execute(securityContext);
 		return new ListHomeGroupsResponse(response);
 	}

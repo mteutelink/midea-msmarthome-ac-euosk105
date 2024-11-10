@@ -4,7 +4,7 @@ import { Security } from './Security';
 import { DeviceContext } from "./DeviceContext";
 import { SecurityContext } from "./SecurityContext";
 import { Socket } from 'net';
-import { logger } from './Logger';
+import { _LOGGER } from './Logger';
 
 import { MIDEA_MESSAGE_TYPE, MSMARTHOME_SIGN_KEY, MSMARTHOME_APP_KEY, MSMARTHOME_IOT_KEY, MSMARTHOME_HMAC_KEY } from './Constants';
 
@@ -19,26 +19,26 @@ export class LANConnection {
 	}
 
 	private async _connect(): Promise<Socket> {
-		logger.info("LANConnection::_connect()");
+		_LOGGER.info("LANConnection::_connect()");
 		if (this._socket) {
 			return (this._socket);
 		}
 
 		this._disconnect();
 
-		logger.http(`Attempting new connection to ${this._deviceContext.host}:${this._deviceContext.port}`);
+		_LOGGER.http(`Attempting new connection to ${this._deviceContext.host}:${this._deviceContext.port}`);
 		return new Promise((resolve, reject) => {
 			const socket = new Socket();
 			socket.setTimeout(5000);
 
 			socket.on('error', (error: Error) => {
-				logger.error(`Connect Error: ${this._deviceContext.host}:${this._deviceContext.port} ${error}`);
+				_LOGGER.error(`Connect Error: ${this._deviceContext.host}:${this._deviceContext.port} ${error}`);
 				this._disconnect();
 				reject(error);
 			});
 
 			socket.connect(this._deviceContext.port, this._deviceContext.host, () => {
-				logger.http(`Connected to ${socket.localAddress}:${socket.localPort}`);
+				_LOGGER.http(`Connected to ${socket.localAddress}:${socket.localPort}`);
 				this._socket = socket;
 				resolve(this._socket);
 			});
@@ -46,7 +46,7 @@ export class LANConnection {
 	}
 
 	private _disconnect() {
-		logger.info("LANConnection::_disconnect()");
+		_LOGGER.info("LANConnection::_disconnect()");
 		if (this._socket) {
 			this._socket.destroy();
 			this._socket = null;
@@ -54,23 +54,23 @@ export class LANConnection {
 	}
 
 	private async _executeRequest(message: Buffer): Promise<Buffer> {
-		logger.info("LANConnection::_executeRequest()");
+		_LOGGER.info("LANConnection::_executeRequest()");
 
 		return new Promise((resolve, reject) => {
 			return this._connect().then(socket => {
 
-				logger.http(`Sending message: ${message.toString('hex')}`);
+				_LOGGER.http(`Sending message: ${message.toString('hex')}`);
 				socket.write(message, (err) => {
 					if (err) {
-						logger.error(`Send Error: ${err}`);
+						_LOGGER.error(`Send Error: ${err}`);
 						this._disconnect();
 						reject(err);
 					}
 
 					this._socket.once('data', (response: Buffer) => {
-						logger.http(`Received response: ${response.toString('hex')}`);
+						_LOGGER.http(`Received response: ${response.toString('hex')}`);
 						if (response.length === 0) {
-							logger.error(`Server Closed Socket`);
+							_LOGGER.error(`Server Closed Socket`);
 							this._disconnect();
 							reject();
 						}
@@ -78,7 +78,7 @@ export class LANConnection {
 					});
 
 					this._socket.once('timeout', () => {
-						logger.info('Socket timed out');
+						_LOGGER.info('Socket timed out');
 						this._disconnect();
 						resolve(Buffer.alloc(0));
 					});
@@ -89,7 +89,7 @@ export class LANConnection {
 
 
 	public async authenticate(securityContext: SecurityContext): Promise<SecurityContext> {
-		logger.info("LANConnection::authenticate()");
+		_LOGGER.info("LANConnection::authenticate()");
 
 		try {
 			const encoded = Security.encode8370(
@@ -107,16 +107,16 @@ export class LANConnection {
 			const updatedSecurityContext = await Security.tcpKey(securityContext, tcpKeyData);
 
 			this._requestCount = 0;
-			logger.debug("LanConnection::_authenticate() = " + JSON.stringify(updatedSecurityContext));
+			_LOGGER.debug("LanConnection::_authenticate() = " + JSON.stringify(updatedSecurityContext));
 			return updatedSecurityContext;
 		} catch (error) {
-			logger.error("Authentication failed:", error);
+			_LOGGER.error("Authentication failed:", error);
 			throw error;
 		}
 	}
 
 	public async executeCommand(securityContext: SecurityContext, request: Buffer, messageType: MIDEA_MESSAGE_TYPE = MIDEA_MESSAGE_TYPE.ENCRYPTED_REQUEST) {
-		logger.info("LanConnection::executeCommand()");
+		_LOGGER.info("LanConnection::executeCommand()");
 		try {
 			const encoded = Security.encode8370(
 				securityContext,
@@ -142,7 +142,7 @@ export class LANConnection {
 
 			return (packets);
 		} catch (error) {
-			logger.error("executeCommand failed:", error);
+			_LOGGER.error("executeCommand failed:", error);
 			throw error;
 		}
 	}
