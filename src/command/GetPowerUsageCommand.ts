@@ -3,7 +3,7 @@
 import { FRAME_TYPE } from '../Constants';
 import { Device } from "../Device";
 import { SecurityContext } from '../SecurityContext';
-import { logger } from '../Logger';
+import { _LOGGER } from '../Logger';
 import { GetPowerUsageResponse } from './GetPowerUsageResponse';
 import { LANCommand } from './LANCommand';
 
@@ -15,7 +15,7 @@ export class GetPowerUsageCommand extends LANCommand {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<GetPowerUsageResponse> {
-		logger.info("GetPowerUsageCommand::execute()");
+		_LOGGER.info("GetPowerUsageCommand::execute()");
 		const response = await super.execute(securityContext);
 		return new GetPowerUsageResponse(response[0]);
 	}

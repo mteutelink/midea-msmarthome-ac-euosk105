@@ -2,6 +2,7 @@
 
 import { Appliance } from "../Appliance";
 
+
 export class ListAppliancesResponse {
 	private _appliances: Appliance[] = [];
 	public get appliances(): Appliance[] {

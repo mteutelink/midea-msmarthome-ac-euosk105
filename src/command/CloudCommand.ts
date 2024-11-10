@@ -2,7 +2,7 @@
 
 import { Device } from '../Device';
 import { SecurityContext } from '../SecurityContext';
-import { logger } from '../Logger';
+import { _LOGGER } from '../Logger';
 import { Command } from './Command';
 
 export abstract class CloudCommand implements Command {
@@ -17,7 +17,7 @@ export abstract class CloudCommand implements Command {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<any> {
-		logger.info("Command::execute()");
+		_LOGGER.info("Command::execute()");
 		return this._device.cloudConnection.executeCommand(securityContext, this._endpoint, this._body);
 	}
 }

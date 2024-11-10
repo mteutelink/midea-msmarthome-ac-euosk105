@@ -4,7 +4,7 @@ import { MIDEA_APPLIANCE_TYPE, FRAME_TYPE } from '../Constants';
 import { Device } from '../Device';
 import { Security } from '../Security';
 import { SecurityContext } from '../SecurityContext';
-import { logger } from '../Logger';
+import { _LOGGER } from '../Logger';
 import dateFormat from 'dateformat';
 import { Command } from './Command';
 
@@ -54,7 +54,7 @@ export abstract class LANCommand implements Command {
 	}
 
 	private _calculateCRC(data: Buffer): number {
-		logger.info("Command::_calculateCheckSum()");
+		_LOGGER.info("Command::_calculateCheckSum()");
 		let crcValue = 0;
 		for (let m of data) {
 			let k = crcValue ^ m;
@@ -62,39 +62,39 @@ export abstract class LANCommand implements Command {
 			if (k < 0) k += 256;
 			crcValue = this.CRC8_854_TABLE[k];
 		}
-		logger.debug("Command::_calculateCheckSum() = " + crcValue);
+		_LOGGER.debug("Command::_calculateCheckSum() = " + crcValue);
 		return crcValue;
 	}
 
 	private _calculateCheckSum(data: Buffer): number {
-		logger.info("Command::_calculateCheckSum()");
+		_LOGGER.info("Command::_calculateCheckSum()");
 		const sum = data.slice(1).reduce((acc, byte) => acc + byte, 0);
 		const checksum = (~sum + 1) & 0xFF;
-		logger.debug("Command::_calculateCheckSum() = " + checksum);
+		_LOGGER.debug("Command::_calculateCheckSum() = " + checksum);
 		return checksum;
 	}
 
 	private _calculatePacketTime(): Buffer {
-		logger.info("Command::_calculatePacketTime()");
+		_LOGGER.info("Command::_calculatePacketTime()");
 		const t = dateFormat(new Date(), "yyyymmddHHMMss").padEnd(16);
 		const buffer = Buffer.alloc(8);
 		for (let i = 0; i < t.length; i += 2) {
 			buffer.writeUInt8(parseInt(t.substr(i, 2), 10), 7 - (i / 2));
 		}
-		logger.debug("Command::_calculatePacketTime() = " + buffer.toString('hex'));
+		_LOGGER.debug("Command::_calculatePacketTime() = " + buffer.toString('hex'));
 		return buffer
 	}
 
 	static _calculcateMessageId(): number {
-		logger.info("Command::_calculcateMessageId()");
+		_LOGGER.info("Command::_calculcateMessageId()");
 		LANCommand._messageId += 1;
 		const messageId = LANCommand._messageId & 0xFF;
-		logger.debug("Command::_calculcateMessageId() = " + messageId);
+		_LOGGER.debug("Command::_calculcateMessageId() = " + messageId);
 		return messageId;
 	  }
 
 	private _createCommand(data: Buffer, frameType: FRAME_TYPE = FRAME_TYPE.REQUEST): Buffer {
-		logger.info("Command::_createCommand()");
+		_LOGGER.info("Command::_createCommand()");
 		// Create payload with message ID
 		const payload = Buffer.concat([data, Buffer.from([LANCommand._calculcateMessageId()])]);
 
@@ -124,12 +124,12 @@ export abstract class LANCommand implements Command {
 		const checksum = Buffer.from([this._calculateCheckSum(frame)]);
 		const frameWithChecksum = Buffer.concat([frame, checksum]);
 
-		logger.debug("Command::_createCommand() = " + frameWithChecksum.toString('hex'));
+		_LOGGER.debug("Command::_createCommand() = " + frameWithChecksum.toString('hex'));
 		return frameWithChecksum;
 	}
 
 	private _createRequest(command: Buffer): Buffer {
-		logger.info("Command::_createRequest()");
+		_LOGGER.info("Command::_createRequest()");
 		// INITIALIZE PACKET
 		let packet: Buffer = Buffer.from([
 			// 2 bytes - StaticHeader
@@ -166,12 +166,12 @@ export abstract class LANCommand implements Command {
 		const checksum = Security.encode32(packet);
 		packet = Buffer.concat([packet, checksum]);
 
-		logger.debug("Command::_createRequest() = " + packet.toString('hex'));
+		_LOGGER.debug("Command::_createRequest() = " + packet.toString('hex'));
 		return packet;
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<any> {
-		logger.info("Command::execute()");
+		_LOGGER.info("Command::execute()");
 		return this._device.lanConnection.executeCommand(securityContext, this._request);
 	}
 }

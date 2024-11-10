@@ -3,7 +3,7 @@
 import { Device } from "../Device";
 import { GetStateResponse } from './GetStateResponse';
 import { SecurityContext } from '../SecurityContext';
-import { logger } from '../Logger';
+import { _LOGGER } from '../Logger';
 import { LANCommand } from './LANCommand';
 
 export class GetStateCommand extends LANCommand {
@@ -19,7 +19,7 @@ export class GetStateCommand extends LANCommand {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<GetStateResponse> {
-		logger.info("GetStateCommand::execute()");
+		_LOGGER.info("GetStateCommand::execute()");
 		const response = await super.execute(securityContext);
 		return new GetStateResponse(response[0]);
 	}

@@ -1,0 +1,59 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "typescript: build",
+			"type": "shell",
+			"command": "tsc",
+			"args": [
+				"-p",
+				"."
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$tsc"
+			],
+			"detail": "Compiles the TypeScript project"
+		},
+		{
+			"label": "typescript: watch",
+			"type": "shell",
+			"command": "tsc",
+			"args": [
+				"-w",
+				"-p",
+				"."
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc-watch"
+			],
+			"detail": "Runs the TypeScript compiler in watch mode"
+		},
+		{
+			"label": "run tests",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"test"
+			],
+			"group": "test",
+			"problemMatcher": [],
+			"detail": "Runs the test suite using npm"
+		},
+		{
+			"label": "clean",
+			"type": "shell",
+			"command": "rm",
+			"args": [
+				"-rf",
+				"dist"
+			],
+			"problemMatcher": [],
+			"detail": "Deletes the dist folder"
+		}
+	]
+}

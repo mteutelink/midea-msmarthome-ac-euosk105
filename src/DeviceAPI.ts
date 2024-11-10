@@ -4,13 +4,13 @@ import { MIDEA_DISCOVER_BROADCAST_MSG, MIDEA_APPLIANCE_TYPE } from './Constants'
 import { Security } from './Security';
 import { Device } from './Device';
 import { DeviceContext } from './DeviceContext';
-import { logger } from './Logger';
+import { _LOGGER } from './Logger';
 import crypto from 'crypto';
 import udp from 'dgram';
 
 export class DeviceAPI {
 	public static async discoverDevices(): Promise<DeviceContext[]> {
-		logger.info("DeviceAPI::list()");
+		_LOGGER.info("DeviceAPI::list()");
 
 		let contexts: DeviceContext[] = [];
 		const client: udp.Socket = udp.createSocket('udp4')
@@ -19,7 +19,7 @@ export class DeviceAPI {
 
 				client.send(MIDEA_DISCOVER_BROADCAST_MSG, 0, MIDEA_DISCOVER_BROADCAST_MSG.length, 6445, '255.255.255.255', error => {
 					if (error) {
-						logger.error(error);
+						_LOGGER.error(error);
 						client.close();
 					}
 				});
@@ -46,8 +46,8 @@ export class DeviceAPI {
 						context.firmware = `${data[72 + data[40]]}.${data[73 + data[40]]}.${data[74 + data[40]]}`;
 						{
 							const hash = crypto.createHash('sha256').update(Buffer.from(_id, 'hex')).digest();
-							const b1 = hash.slice(0, 16);
-							const b2 = hash.slice(16);
+							const b1 = hash.subarray(0, 16);
+							const b2 = hash.subarray(16);
 							const b3 = Buffer.alloc(16);
 						
 							for (let i = 0; i < b1.length; i++) {
@@ -67,12 +67,12 @@ export class DeviceAPI {
 	}
 
 	public static async getDevice(id: number): Promise<Device> {
-		logger.info("DeviceAPI::getDevice()");
+		_LOGGER.info("DeviceAPI::getDevice()");
 		
 		const devices = await DeviceAPI.discoverDevices();
 		const deviceContext = devices.find((deviceContext) => id === deviceContext.id);
 		if (!deviceContext) {
-			logger.error(`Device with id ${id} not found`);
+			_LOGGER.error(`Device with id ${id} not found`);
 			throw new Error(`Device with id ${id} not found`);
 		}
 		return new Device(deviceContext);
