@@ -1,12 +1,12 @@
 "use strict";
 
-import { Security } from './Security';
-import { DeviceContext } from "./DeviceContext";
-import { SecurityContext } from "./SecurityContext";
+import { MIDEA_MESSAGE_TYPE } from './Constants';
+import { Security } from 'Security';
+import { DeviceContext } from "DeviceContext";
+import { SecurityContext } from "SecurityContext";
+import { _LOGGER } from 'Logger';
 import { Socket } from 'net';
-import { _LOGGER } from './Logger';
 
-import { MIDEA_MESSAGE_TYPE, MSMARTHOME_SIGN_KEY, MSMARTHOME_APP_KEY, MSMARTHOME_IOT_KEY, MSMARTHOME_HMAC_KEY } from './Constants';
 
 export class LANConnection {
 	private _deviceContext: DeviceContext;

@@ -13,10 +13,11 @@
     "winston": "^3.16.0"
   },
   "scripts": {
+    "build": "tsc",
     "test": "jest"
   },
   "name": "midea-msmarthome-ac-euosk105",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "This package contains a Typescript implementation of the Midea MSmartHome AC API via the eu-osk105 wifi adapter.",
   "main": "dist/src/index.ts",
   "repository": {

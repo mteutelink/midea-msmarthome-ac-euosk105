@@ -1,10 +1,10 @@
 "use strict";
 
-import { Device } from "../Device";
-import { SecurityContext } from '../SecurityContext';
-import { _LOGGER } from '../Logger';
-import { CloudCommand } from './CloudCommand';
-import { ListHomeGroupsResponse } from "./ListHomeGroupsResponse";
+import { Device } from "Device";
+import { SecurityContext } from 'SecurityContext';
+import { _LOGGER } from 'Logger';
+import { CloudCommand } from 'command/CloudCommand';
+import { ListHomeGroupsResponse } from "command/ListHomeGroupsResponse";
 
 export class ListHomeGroupsCommand extends CloudCommand {
 	constructor(device: Device) {
