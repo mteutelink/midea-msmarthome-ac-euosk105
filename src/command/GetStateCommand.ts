@@ -1,10 +1,10 @@
 "use strict";
 
-import { Device } from "../Device";
-import { GetStateResponse } from './GetStateResponse';
-import { SecurityContext } from '../SecurityContext';
-import { _LOGGER } from '../Logger';
-import { LANCommand } from './LANCommand';
+import { Device } from "Device";
+import { GetStateResponse } from 'command/GetStateResponse';
+import { SecurityContext } from 'SecurityContext';
+import { _LOGGER } from 'Logger';
+import { LANCommand } from 'command/LANCommand';
 
 export class GetStateCommand extends LANCommand {
 	constructor(device: Device) {
