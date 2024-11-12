@@ -1,6 +1,6 @@
 "use strict";
 
-import { HomeGroup } from "HomeGroup";
+import { HomeGroup } from "../HomeGroup";
 
 export class ListHomeGroupsResponse {
 	private _homeGroups: HomeGroup[] = [];

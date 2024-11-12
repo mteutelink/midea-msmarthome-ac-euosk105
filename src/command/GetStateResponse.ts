@@ -1,6 +1,6 @@
 "use strict";
 
-import { DeviceState, MIN_TARGET_TEMPERATURE } from 'DeviceState';
+import { DeviceState, MIN_TARGET_TEMPERATURE } from '../DeviceState';
 
 export class GetStateResponse extends DeviceState {
 	constructor(data: Buffer) {

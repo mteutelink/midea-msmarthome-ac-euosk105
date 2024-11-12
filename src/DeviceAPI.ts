@@ -1,10 +1,10 @@
 "use strict";
 
-import { MIDEA_DISCOVER_BROADCAST_MSG, MIDEA_APPLIANCE_TYPE } from 'Constants';
-import { Security } from 'Security';
-import { Device } from 'Device';
-import { DeviceContext } from 'DeviceContext';
-import { _LOGGER } from 'Logger';
+import { MIDEA_DISCOVER_BROADCAST_MSG, MIDEA_APPLIANCE_TYPE } from './Constants';
+import { Security } from './Security';
+import { Device } from './Device';
+import { DeviceContext } from './DeviceContext';
+import { _LOGGER } from './Logger';
 import crypto from 'crypto';
 import udp from 'dgram';
 

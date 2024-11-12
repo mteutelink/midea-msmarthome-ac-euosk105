@@ -1,12 +1,12 @@
 "use strict";
 
-import { MIDEA_APPLIANCE_TYPE, FRAME_TYPE } from 'Constants';
-import { Device } from 'Device';
-import { Security } from 'Security';
-import { SecurityContext } from 'SecurityContext';
-import { _LOGGER } from 'Logger';
+import { MIDEA_APPLIANCE_TYPE, FRAME_TYPE } from '../Constants';
+import { Device } from '../Device';
+import { Security } from '../Security';
+import { SecurityContext } from '../SecurityContext';
+import { _LOGGER } from '../Logger';
+import { Command } from './Command';
 import dateFormat from 'dateformat';
-import { Command } from 'command/Command';
 
 export abstract class LANCommand implements Command {
 	protected _device: Device;
