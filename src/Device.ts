@@ -1,10 +1,10 @@
 "use strict";
 
-import { DeviceContext } from 'DeviceContext';
-import { SecurityContext } from 'SecurityContext';
-import { CloudConnection } from 'CloudConnection';
-import { LANConnection } from 'LANConnection';
-import { _LOGGER } from 'Logger';
+import { DeviceContext } from './DeviceContext';
+import { SecurityContext } from './SecurityContext';
+import { CloudConnection } from './CloudConnection';
+import { LANConnection } from './LANConnection';
+import { _LOGGER } from './Logger';
 
 export class Device {
 	private _deviceContext: DeviceContext;

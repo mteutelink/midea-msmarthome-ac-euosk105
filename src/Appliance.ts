@@ -1,6 +1,6 @@
 "use strict";
 
-import { MIDEA_APPLIANCE_TYPE } from "Constants";
+import { MIDEA_APPLIANCE_TYPE } from "./Constants";
 
 export class Appliance {
 	private _id: string = "";

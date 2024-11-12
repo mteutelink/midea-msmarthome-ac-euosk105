@@ -1,12 +1,11 @@
 "use strict";
 
 import { MIDEA_MESSAGE_TYPE } from './Constants';
-import { Security } from 'Security';
-import { DeviceContext } from "DeviceContext";
-import { SecurityContext } from "SecurityContext";
-import { _LOGGER } from 'Logger';
+import { Security } from './Security';
+import { DeviceContext } from "./DeviceContext";
+import { SecurityContext } from "./SecurityContext";
+import { _LOGGER } from './Logger';
 import { Socket } from 'net';
-
 
 export class LANConnection {
 	private _deviceContext: DeviceContext;

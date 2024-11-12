@@ -1,6 +1,6 @@
 "use strict";
 
-import { Appliance } from "Appliance";
+import { Appliance } from "../Appliance";
 
 
 export class ListAppliancesResponse {
