@@ -7,9 +7,9 @@ import { LANConnection } from './LANConnection';
 import { _LOGGER } from './Logger';
 
 export class Device {
-	private _deviceContext: DeviceContext;
+	private readonly _deviceContext: DeviceContext;
 	private _cloudConnection: CloudConnection;
-	private _lanConnection: LANConnection;
+	private readonly _lanConnection: LANConnection;
 
 	constructor(deviceContext: DeviceContext) {
 		this._deviceContext = deviceContext;
