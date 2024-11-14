@@ -1,5 +1,5 @@
 export  * from './Constants';
-export { DeviceAPI } from './DeviceAPI';
+export { Driver } from './Driver';
 export { Device } from './Device';
 export { DeviceContext } from './DeviceContext';
 export { DeviceState } from './DeviceState';

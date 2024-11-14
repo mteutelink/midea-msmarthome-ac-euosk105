@@ -8,7 +8,7 @@ import { _LOGGER } from './Logger';
 import { Socket } from 'net';
 
 export class LANConnection {
-	private _deviceContext: DeviceContext;
+	private readonly _deviceContext: DeviceContext;
 	private _socket: any;
 	private _requestCount: number = 0;
 
@@ -101,7 +101,7 @@ export class LANConnection {
 			this._requestCount = encoded.count;
 
 			const response = await this._executeRequest(encoded.data);
-			const tcpKeyData = response.slice(8, 72);
+			const tcpKeyData = response.subarray(8, 72);
 
 			const updatedSecurityContext = await Security.tcpKey(securityContext, tcpKeyData);
 
@@ -132,7 +132,7 @@ export class LANConnection {
 
 			decodedResponses.forEach(response => {
 				if (response.length > 40 + 16) {
-					response = Security.aesDecrypt(response.slice(40, -16));
+					response = Security.aesDecrypt(response.subarray(40, -16));
 				}
 				if (response.length > 10) {
 					packets.push(response);

@@ -8,11 +8,11 @@ import { _LOGGER } from './Logger';
 import crypto from 'crypto';
 import udp from 'dgram';
 
-export class DeviceAPI {
-	public static async discoverDevices(): Promise<DeviceContext[]> {
-		_LOGGER.info("DeviceAPI::list()");
+export class Driver {
+	public static async listDevices(): Promise<Device[]> {
+		_LOGGER.info("Driver::listDevices()");
 
-		let contexts: DeviceContext[] = [];
+		let devices: Device[] = [];
 		const client: udp.Socket = udp.createSocket('udp4')
 			.bind({}, () => {
 				client.setBroadcast(true);
@@ -55,26 +55,26 @@ export class DeviceAPI {
 							}
 							context.udpId =  b3.toString('hex');
 						}
-						contexts.push(context);
+						devices.push(new Device(context));
 					}
 				}
 			});
 
 		return new Promise((resolve) => setTimeout(() => {
 			client.close();
-			resolve(contexts);
+			resolve(devices);
 		}, 2000));
 	}
 
 	public static async getDevice(id: number): Promise<Device> {
 		_LOGGER.info("DeviceAPI::getDevice()");
 		
-		const devices = await DeviceAPI.discoverDevices();
-		const deviceContext = devices.find((deviceContext) => id === deviceContext.id);
-		if (!deviceContext) {
+		const devices = await Driver.listDevices();
+		const device = devices.find((device) => id === device.deviceContext.id);
+		if (!device) {
 			_LOGGER.error(`Device with id ${id} not found`);
 			throw new Error(`Device with id ${id} not found`);
 		}
-		return new Device(deviceContext);
+		return device; 
 	}
 }
