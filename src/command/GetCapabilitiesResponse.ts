@@ -272,7 +272,6 @@ export class GetCapabilitiesResponse extends DeviceCapabilities {
 
 					case 0x25:
 						if (data[i + 2] >= 6) {
-							_LOGGER.silly(`B5.parser: Parsing adjust temp capability ${data[i + 3]}`);
 							getCapabilitiesResponse.minTempCool = data[i + 3] / 2; // cool_adjust_down_temp
 							getCapabilitiesResponse.maxTempCool = data[i + 4] / 2; // cool_adjust_up_temp
 							getCapabilitiesResponse.minTempAuto = data[i + 5] / 2; // auto_adjust_down_temp

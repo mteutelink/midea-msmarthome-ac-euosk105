@@ -15,7 +15,7 @@ export class GetCapabilitiesCommand extends LANCommand {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<GetCapabilitiesResponse> {
-		_LOGGER.info("GetCapabilitiesCommand::execute()");
+		_LOGGER.debug("GetCapabilitiesCommand::execute()");
 		let response = await super.execute(securityContext);
 		
 		let getCapabilitiesResponse: GetCapabilitiesResponse = new GetCapabilitiesResponse(response[0]);

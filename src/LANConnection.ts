@@ -9,7 +9,7 @@ import { Socket } from 'net';
 
 export class LANConnection {
 	private readonly _deviceContext: DeviceContext;
-	private _socket: any;
+	private _socket: Socket | null;
 	private _requestCount: number = 0;
 
 	constructor(deviceContext: DeviceContext) {
@@ -18,7 +18,7 @@ export class LANConnection {
 	}
 
 	private async _connect(): Promise<Socket> {
-		_LOGGER.info("LANConnection::_connect()");
+		_LOGGER.debug("LANConnection::_connect()");
 		if (this._socket) {
 			return (this._socket);
 		}
@@ -28,7 +28,7 @@ export class LANConnection {
 		_LOGGER.http(`Attempting new connection to ${this._deviceContext.host}:${this._deviceContext.port}`);
 		return new Promise((resolve, reject) => {
 			const socket = new Socket();
-			socket.setTimeout(5000);
+			socket.setTimeout(10000);
 
 			socket.on('error', (error: Error) => {
 				_LOGGER.error(`Connect Error: ${this._deviceContext.host}:${this._deviceContext.port} ${error}`);
@@ -45,7 +45,7 @@ export class LANConnection {
 	}
 
 	private _disconnect() {
-		_LOGGER.info("LANConnection::_disconnect()");
+		_LOGGER.debug("LANConnection::_disconnect()");
 		if (this._socket) {
 			this._socket.destroy();
 			this._socket = null;
@@ -53,7 +53,7 @@ export class LANConnection {
 	}
 
 	private async _executeRequest(message: Buffer): Promise<Buffer> {
-		_LOGGER.info("LANConnection::_executeRequest()");
+		_LOGGER.debug("LANConnection::_executeRequest()");
 
 		return new Promise((resolve, reject) => {
 			return this._connect().then(socket => {
@@ -66,7 +66,7 @@ export class LANConnection {
 						reject(err);
 					}
 
-					this._socket.once('data', (response: Buffer) => {
+					socket.once('data', (response: Buffer) => {
 						_LOGGER.http(`Received response: ${response.toString('hex')}`);
 						if (response.length === 0) {
 							_LOGGER.error(`Server Closed Socket`);
@@ -76,8 +76,8 @@ export class LANConnection {
 						resolve(response);
 					});
 
-					this._socket.once('timeout', () => {
-						_LOGGER.info('Socket timed out');
+					socket.once('timeout', () => {
+						_LOGGER.debug('Socket timed out');
 						this._disconnect();
 						resolve(Buffer.alloc(0));
 					});
@@ -88,7 +88,7 @@ export class LANConnection {
 
 
 	public async authenticate(securityContext: SecurityContext): Promise<SecurityContext> {
-		_LOGGER.info("LANConnection::authenticate()");
+		_LOGGER.debug("LANConnection::authenticate()");
 
 		try {
 			const encoded = Security.encode8370(
@@ -101,7 +101,7 @@ export class LANConnection {
 			this._requestCount = encoded.count;
 
 			const response = await this._executeRequest(encoded.data);
-			const tcpKeyData = response.subarray(8, 72);
+			const tcpKeyData = response.slice(8, 72);
 
 			const updatedSecurityContext = await Security.tcpKey(securityContext, tcpKeyData);
 
@@ -115,8 +115,12 @@ export class LANConnection {
 	}
 
 	public async executeCommand(securityContext: SecurityContext, request: Buffer, messageType: MIDEA_MESSAGE_TYPE = MIDEA_MESSAGE_TYPE.ENCRYPTED_REQUEST) {
-		_LOGGER.info("LanConnection::executeCommand()");
+		_LOGGER.debug("LanConnection::executeCommand()");
 		try {
+			if (!this._socket) {
+				securityContext = await this.authenticate(securityContext);
+			}
+
 			const encoded = Security.encode8370(
 				securityContext,
 				request,
@@ -132,7 +136,7 @@ export class LANConnection {
 
 			decodedResponses.forEach(response => {
 				if (response.length > 40 + 16) {
-					response = Security.aesDecrypt(response.subarray(40, -16));
+					response = Security.aesDecrypt(response.slice(40, -16));
 				}
 				if (response.length > 10) {
 					packets.push(response);

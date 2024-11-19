@@ -12,7 +12,7 @@ export class ListAppliancesCommand extends CloudCommand {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<ListAppliancesResponse> {
-		_LOGGER.info("ListAppliancesCommand::execute()");
+		_LOGGER.debug("ListAppliancesCommand::execute()");
 		const response = await super.execute(securityContext);
 		return new ListAppliancesResponse(response);
 	}

@@ -17,7 +17,7 @@ export abstract class CloudCommand implements Command {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<any> {
-		_LOGGER.info("Command::execute()");
+		_LOGGER.debug("Command::execute()");
 		return this._device.cloudConnection.executeCommand(securityContext, this._endpoint, this._body);
 	}
 }
