@@ -7,6 +7,8 @@ export class SecurityContext {
 	private _token: string = '';
 	private _key: string = '';
 	private _cloudAccessToken: string = '';
+	private _cloudAccessCreateDate: Date | null = null;
+	private _cloudAccessExpiredDate: Date | null = null;
 	private _lanAccessToken: string = '';
 
 	constructor(account: string, password: string) {
@@ -67,6 +69,22 @@ export class SecurityContext {
 
 	set cloudAccessToken(cloudAccessToken: string) {
 		this._cloudAccessToken = cloudAccessToken;
+	}
+
+	// CLOUDACCESSCREATEDDATE
+	public get cloudAccessCreateDate(): Date | null{
+		return this._cloudAccessCreateDate;
+	}
+	public set cloudAccessCreateDate(value: Date) {
+		this._cloudAccessCreateDate = value;
+	}
+
+	// CLOUDACCESSEXPIREDDATE
+	public get cloudAccessExpiredDate(): Date | null {
+		return this._cloudAccessExpiredDate;
+	}
+	public set cloudAccessExpiredDate(value: Date) {
+		this._cloudAccessExpiredDate = value;
 	}
 
 	// LANACCESSTOKEN

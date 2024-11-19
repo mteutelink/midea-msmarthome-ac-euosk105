@@ -54,7 +54,7 @@ export abstract class LANCommand implements Command {
 	}
 
 	private _calculateCRC(data: Buffer): number {
-		_LOGGER.info("Command::_calculateCheckSum()");
+		_LOGGER.debug("Command::_calculateCheckSum()");
 		let crcValue = 0;
 		for (let m of data) {
 			let k = crcValue ^ m;
@@ -67,7 +67,7 @@ export abstract class LANCommand implements Command {
 	}
 
 	private _calculateCheckSum(data: Buffer): number {
-		_LOGGER.info("Command::_calculateCheckSum()");
+		_LOGGER.debug("Command::_calculateCheckSum()");
 		const sum = data.slice(1).reduce((acc, byte) => acc + byte, 0);
 		const checksum = (~sum + 1) & 0xFF;
 		_LOGGER.debug("Command::_calculateCheckSum() = " + checksum);
@@ -75,7 +75,7 @@ export abstract class LANCommand implements Command {
 	}
 
 	private _calculatePacketTime(): Buffer {
-		_LOGGER.info("Command::_calculatePacketTime()");
+		_LOGGER.debug("Command::_calculatePacketTime()");
 		const t = dateFormat(new Date(), "yyyymmddHHMMss").padEnd(16);
 		const buffer = Buffer.alloc(8);
 		for (let i = 0; i < t.length; i += 2) {
@@ -86,7 +86,7 @@ export abstract class LANCommand implements Command {
 	}
 
 	static _calculcateMessageId(): number {
-		_LOGGER.info("Command::_calculcateMessageId()");
+		_LOGGER.debug("Command::_calculcateMessageId()");
 		LANCommand._messageId += 1;
 		const messageId = LANCommand._messageId & 0xFF;
 		_LOGGER.debug("Command::_calculcateMessageId() = " + messageId);
@@ -94,7 +94,7 @@ export abstract class LANCommand implements Command {
 	  }
 
 	private _createCommand(data: Buffer, frameType: FRAME_TYPE = FRAME_TYPE.REQUEST): Buffer {
-		_LOGGER.info("Command::_createCommand()");
+		_LOGGER.debug("Command::_createCommand()");
 		// Create payload with message ID
 		const payload = Buffer.concat([data, Buffer.from([LANCommand._calculcateMessageId()])]);
 
@@ -129,7 +129,7 @@ export abstract class LANCommand implements Command {
 	}
 
 	private _createRequest(command: Buffer): Buffer {
-		_LOGGER.info("Command::_createRequest()");
+		_LOGGER.debug("Command::_createRequest()");
 		// INITIALIZE PACKET
 		let packet: Buffer = Buffer.from([
 			// 2 bytes - StaticHeader
@@ -171,7 +171,7 @@ export abstract class LANCommand implements Command {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<any> {
-		_LOGGER.info("Command::execute()");
+		_LOGGER.debug("Command::execute()");
 		return this._device.lanConnection.executeCommand(securityContext, this._request);
 	}
 }

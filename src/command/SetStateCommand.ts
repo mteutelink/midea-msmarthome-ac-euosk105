@@ -42,7 +42,7 @@ export class SetStateCommand extends LANCommand {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<GetStateResponse> {
-		_LOGGER.info("SetStateCommand::execute()");
+		_LOGGER.debug("SetStateCommand::execute()");
 		const response = await super.execute(securityContext);
 		return new GetStateCommand(this._device).execute(securityContext);
 	}

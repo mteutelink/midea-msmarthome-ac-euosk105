@@ -15,7 +15,7 @@ export class GetPowerUsageCommand extends LANCommand {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<GetPowerUsageResponse> {
-		_LOGGER.info("GetPowerUsageCommand::execute()");
+		_LOGGER.debug("GetPowerUsageCommand::execute()");
 		const response = await super.execute(securityContext);
 		return new GetPowerUsageResponse(response[0]);
 	}

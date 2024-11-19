@@ -6,6 +6,7 @@
 import type {Config} from 'jest';
 
 const config: Config = {
+  preset: 'ts-jest/presets/js-with-ts',
   // All imported modules in your tests should be mocked automatically
   // automock: false,
 
@@ -155,11 +156,10 @@ const config: Config = {
   // testLocationInResults: false,
 
   // The glob patterns Jest uses to detect test files
-   testMatch: [
-     //"**/tests/**/*.[jt]s?(x)",
-     "**/tests/**/*.ts",
-     "**/?(*.)+(spec|test).ts"
-   ],
+  "testMatch": [
+    "**/__tests__/**/*.+(ts|tsx|js)",
+    "**/?(*.)+(spec|test).+(ts|tsx|js)"
+  ],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   // testPathIgnorePatterns: [
@@ -177,8 +177,8 @@ const config: Config = {
 
   // A map from regular expressions to paths to transformers
   // transform: undefined,
-  transform: {
-    "^.+.tsx?$": ["ts-jest",{}],
+  "transform": {
+    "^.+\\.(ts|tsx)$": "ts-jest"
   },
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [

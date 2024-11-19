@@ -15,7 +15,8 @@ export const enum FAN_SPEED {
 	SILENT = 20,	// 0x14
 	LOW = 40,		// 0x28
 	MEDIUM = 60,	// 0x3C
-	HIGH = 80		// 0x50
+	HIGH = 80,		// 0x50
+	FULL = 100		// 0x64
 };
 
 export const enum SWING_MODE {
