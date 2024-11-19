@@ -7,7 +7,6 @@ import crypto from 'crypto';
 
 export class Security {
 	public static aesEncrypt(raw: Buffer): Buffer {
-		_LOGGER.info("Security::aesEncrypt()");
 		_LOGGER.debug("Security::aesEncrypt(" + raw.toString('hex') + ")");
 		const cipher: crypto.Cipher = crypto.createCipheriv('aes-128-ecb', this._encodedSignKey(), null);
 		const encrypted = Buffer.concat([cipher.update(raw), cipher.final()]);
@@ -16,7 +15,6 @@ export class Security {
 	}
 
 	public static aesDecrypt(raw: Buffer): Buffer {
-		_LOGGER.info("Security::aesDecrypt()");
 		_LOGGER.debug("Security::aesDecrypt(" + raw.toString('hex') + ")");
 		const decipher: crypto.Decipher = crypto.createDecipheriv('aes-128-ecb', this._encodedSignKey(), null);
 		const decrypted = Buffer.concat([decipher.update(raw), decipher.final()]);
@@ -25,7 +23,6 @@ export class Security {
 	}
 
 	public static aesCbcEncrypt(raw: Buffer, key: Buffer): Buffer {
-		_LOGGER.info("Security::aesCbcEncrypt()");
 		_LOGGER.debug("Security::aesCbcEncrypt(" + raw.toString('hex') + ", " + key.toString('hex') + ")");
 		const cipher: crypto.Cipher = crypto.createCipheriv('aes-256-cbc', key, /*IV*/Buffer.alloc(16, 0));
 		const encrypted =  cipher.update(raw);
@@ -34,7 +31,6 @@ export class Security {
 	}
 
 	public static aesCbcDecrypt(raw: Buffer, key: Buffer): Buffer {
-		_LOGGER.info("Security::aesCbcDecrypt()");
 		_LOGGER.debug("Security::aesCbcDecrypt(" + raw.toString('hex') + ", " + key.toString('hex') + ")");
 		const decipher: crypto.Decipher = crypto.createDecipheriv('aes-256-cbc', key, Buffer.alloc(16)).setAutoPadding(false);
 		const decrypted =  decipher.update(raw);
@@ -43,14 +39,13 @@ export class Security {
 	}
 
 	private static _encodedSignKey(): Buffer {
-		_LOGGER.info("Security::_encodedSignKey()");
+		_LOGGER.debug("Security::_encodedSignKey()");
 		const encoded = crypto.createHash('md5').update(MSMARTHOME_SIGN_KEY).digest();
 		_LOGGER.debug("Security::_encodedSignKey() = " + encoded.toString('hex'));
 		return encoded;
 	}
 
 	public static sign(data:string, random: string): string {
-		_LOGGER.info("Security::sign()");
 		_LOGGER.debug("Security::sign(" + data + ", " + random + ")");
 		const msg: string = MSMARTHOME_IOT_KEY + data + random;
 		const sign = crypto.createHmac('SHA256', MSMARTHOME_HMAC_KEY).update(msg).digest('hex');
@@ -58,7 +53,7 @@ export class Security {
 		return sign;
 	}
 	public static encryptPassword(loginId: string, password: string): string {
-		_LOGGER.info("Security::encryptPassword()");
+		_LOGGER.debug("Security::encryptPassword(****, ****)");
 		const hashedPassword: string = crypto.createHash('sha256').update(password, 'utf-8').digest('hex');
 		const encrypted = crypto.createHash('sha256').update(`${loginId}${hashedPassword}${MSMARTHOME_APP_KEY}`, 'utf-8').digest('hex');
 		_LOGGER.debug("Security::encryptPassword() = " + encrypted);
@@ -66,7 +61,7 @@ export class Security {
 	}
 	
 	public static encryptIAMPassword(loginId: string, password: string): string {
-		_LOGGER.info("Security::encryptIAMPassword()");
+		_LOGGER.debug("Security::encryptIAMPassword(****, ****)");
 		const mdPassword: string = crypto.createHash('md5').update(password, 'utf-8').digest('hex');
 		const mdMdPassword: string = crypto.createHash('md5').update(mdPassword, 'utf-8').digest('hex');
 		const encrypted = crypto.createHash('sha256').update(`${loginId}${mdMdPassword}${MSMARTHOME_APP_KEY}`, 'utf-8').digest('hex');
@@ -75,7 +70,6 @@ export class Security {
 	}
 
 	public static encode32(data: Buffer) {
-		_LOGGER.info("Security::encode32()");
 		_LOGGER.debug("Security::encode32(" + data.toString('hex') + ")");
 		const encoded = crypto.createHash('md5').update(Buffer.concat([data, Buffer.from(MSMARTHOME_SIGN_KEY, 'utf-8')])).digest();
 		_LOGGER.debug("Security::encode32() = " + encoded.toString('hex'));
@@ -83,7 +77,7 @@ export class Security {
 	  }
 
 	public static encode8370(securityContext: SecurityContext, data: Buffer, requestCount: number, msgtype: MIDEA_MESSAGE_TYPE) {
-		_LOGGER.info("Security::encode8370(" + msgtype + ")");
+		_LOGGER.debug("Security::encode8370(" + msgtype + ")");
 		let header: Buffer = Buffer.from([0x83, 0x70] );
 		let size: number = data.length;
 		let padding: number = 0;
@@ -105,7 +99,7 @@ export class Security {
 		header.writeUInt16BE(size, 2); 
 	
 		if (requestCount >= 0xfff) {
-			_LOGGER.info(`request_count is too big to convert: ${requestCount}`);
+			_LOGGER.debug(`request_count is too big to convert: ${requestCount}`);
 			requestCount = 0;
 		}
 	
@@ -126,7 +120,7 @@ export class Security {
 	}
 
 	public static decode8370(securityContext: SecurityContext, data: Buffer): any[] {
-		_LOGGER.info("Security::decode8370()");
+		_LOGGER.debug("Security::decode8370()");
 		if (data.length < 6) {
 			return [[], data];
 		}
@@ -184,7 +178,7 @@ export class Security {
 	}
 
 	public static async tcpKey(securityContext: SecurityContext, response: Buffer): Promise<SecurityContext> {
-		_LOGGER.info("Security::tcpKey()");
+		_LOGGER.debug("Security::tcpKey()");
 		return new Promise((resolve, reject) => {
 			if (response.toString() === 'ERROR') {
 				_LOGGER.error('Authentication failed');

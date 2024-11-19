@@ -10,7 +10,7 @@ import udp from 'dgram';
 
 export class Driver {
 	public static async listDevices(): Promise<Device[]> {
-		_LOGGER.info("Driver::listDevices()");
+		_LOGGER.debug("Driver::listDevices()");
 
 		let devices: Device[] = [];
 		const client: udp.Socket = udp.createSocket('udp4')
@@ -67,7 +67,7 @@ export class Driver {
 	}
 
 	public static async getDevice(id: number): Promise<Device> {
-		_LOGGER.info("DeviceAPI::getDevice()");
+		_LOGGER.debug("Driver::getDevice(" + id + ")");
 		
 		const devices = await Driver.listDevices();
 		const device = devices.find((device) => id === device.deviceContext.id);

@@ -29,10 +29,9 @@ export class Device {
 		return this._lanConnection;
 	}
 
-	public async authenticate(account: string, password: string): Promise<SecurityContext> {
-		_LOGGER.info("Device::authenticate()");
-		this._cloudConnection = new CloudConnection(this._deviceContext);
-		return this._cloudConnection.authenticate(account, password).then(securityContext => {
+	public async authenticate(securityContext: SecurityContext): Promise<SecurityContext> {
+		_LOGGER.debug("Device::authenticate()");
+		return this._cloudConnection.authenticate(securityContext).then(securityContext => {
 			return this._lanConnection.authenticate(securityContext);
 		})
 	}

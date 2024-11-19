@@ -12,7 +12,7 @@ export class ListHomeGroupsCommand extends CloudCommand {
 	}
 
 	public async execute(securityContext: SecurityContext): Promise<ListHomeGroupsResponse> {
-		_LOGGER.info("ListHomeGroupsCommand::execute()");
+		_LOGGER.debug("ListHomeGroupsCommand::execute()");
 		const response = await super.execute(securityContext);
 		return new ListHomeGroupsResponse(response);
 	}
