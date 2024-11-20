@@ -28,7 +28,7 @@ export class LANConnection {
 		_LOGGER.http(`Attempting new connection to ${this._deviceContext.host}:${this._deviceContext.port}`);
 		return new Promise((resolve, reject) => {
 			const socket = new Socket();
-			socket.setTimeout(10000);
+			socket.setTimeout(30000);
 
 			socket.on('error', (error: Error) => {
 				_LOGGER.error(`Connect Error: ${this._deviceContext.host}:${this._deviceContext.port} ${error}`);
