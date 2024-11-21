@@ -12,7 +12,7 @@ export class LANConnection {
 	private _socket: Socket | null;
 	private _requestCount: number = 0;
 	private _numberOfRetries: number = 0;
-	private MAX_NUMBER_OF_RETRIES: number = 3;
+	private readonly MAX_NUMBER_OF_RETRIES: number = 3;
 
 	constructor(device: Device) {
 		this._device= device;
@@ -142,11 +142,9 @@ export class LANConnection {
 
 			let response = await this._executeRequest(encoded.data);
 			if(!response || response.length < 13 || response.subarray(8, 13).equals(Buffer.from("ERROR", 'utf8'))) {
-				if(++this._numberOfRetries < this.MAX_NUMBER_OF_RETRIES) {
+				if(++this._numberOfRetries <= this.MAX_NUMBER_OF_RETRIES) {
 					_LOGGER.debug("RETRYING [" + this._numberOfRetries + "]");
-					if (this._device.securityContext) {
-						this._device.securityContext = await this.authenticate(this._device.securityContext);
-					}
+					this._disconnect();
 					return this.executeCommand(request, messageType);
 				} else {
 					_LOGGER.error("Error occured during command execution; retried but nothing helps");
