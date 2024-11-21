@@ -11,9 +11,9 @@ export class ListHomeGroupsCommand extends CloudCommand {
 		super(device, "/v1/homegroup/list/get", {});
 	}
 
-	public async execute(securityContext: SecurityContext): Promise<ListHomeGroupsResponse> {
+	public async execute(): Promise<ListHomeGroupsResponse> {
 		_LOGGER.debug("ListHomeGroupsCommand::execute()");
-		const response = await super.execute(securityContext);
+		const response = await super.execute();
 		return new ListHomeGroupsResponse(response);
 	}
 }

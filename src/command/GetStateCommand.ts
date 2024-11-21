@@ -18,9 +18,9 @@ export class GetStateCommand extends LANCommand {
 			]));
 	}
 
-	public async execute(securityContext: SecurityContext): Promise<GetStateResponse> {
+	public async execute(): Promise<GetStateResponse> {
 		_LOGGER.debug("GetStateCommand::execute()");
-		const response = await super.execute(securityContext);
+		const response = await super.execute();
 		return new GetStateResponse(response[0]);
 	}
 }

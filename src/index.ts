@@ -4,6 +4,7 @@ export { Device } from './Device';
 export { DeviceContext } from './DeviceContext';
 export { DeviceState } from './DeviceState';
 export { DeviceCapabilities } from './DeviceCapabilities';
+export { Connection } from './Connection';
 export { LANConnection } from './LANConnection';
 export { CloudConnection } from './CloudConnection';
 export { Security } from './Security';

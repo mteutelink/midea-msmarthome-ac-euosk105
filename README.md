@@ -10,7 +10,7 @@ The knowledge to create this library is based on reverse engineering (LUA script
 The Driver is the entrypoint of the service library and can be used to discover devices and retrieve one specific device based on its ID.
 ```js
 	Driver.listDevices().then(devices: Device[] => {
-		console.log(JSON.stringify(devices));
+		console.log(util.inspect(devices)); /* circular */
 	})
 ```
 
@@ -27,13 +27,12 @@ Under the hood a user will be logged in into the MSmartHome Cloud and then local
 		securityContext = await device.authenticate(securityContext);
 
 		const getState: GetStateCommand = new GetStateCommand(device);
-		let state: GetStateResponse = await getState.execute(securityContext);
+		let state: GetStateResponse = await getState.execute();
 		console.log(JSON.stringify(state));
 
 		state.powerOn = true;
 		const setState: SetStateCommand = new SetStateCommand(device, state);
-		state: GetStateResponse = await setState.execute(securityContext);
+		state: GetStateResponse = await setState.execute();
 		console.log(JSON.stringify(state));
 	})
 ```
-

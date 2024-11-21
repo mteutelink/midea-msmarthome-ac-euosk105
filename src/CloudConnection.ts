@@ -2,11 +2,12 @@
 
 import { MSMARTHOME_APP_ID, MSMARTHOME_FORMAT, MSMARTHOME_CLIENT_TYPE, MSMARTHOME_LANGUAGE, MSMARTHOME_SRC, MSMARTHOME_API_URL } from './Constants';
 import { Security } from './Security';
-import { DeviceContext } from './DeviceContext';
 import { SecurityContext } from './SecurityContext';
 import { _LOGGER } from './Logger';
 import crypto from 'crypto';
 import dateFormat from 'dateformat';
+import { Device } from 'Device';
+import { Connection } from 'Connection';
 
 class TokenAndKey {
 	private _token: string;
@@ -72,11 +73,11 @@ class CloudAccessToken {
 	}
 }
 
-export class CloudConnection {
-	private _deviceContext: DeviceContext;
+export class CloudConnection implements Connection {
+	private _device: Device;
 
-	constructor(deviceContext: DeviceContext) {
-		this._deviceContext = deviceContext;
+	constructor(device: Device) {
+		this._device= device;
 	}
 
 	private _createRequest(data: {}): {} {
@@ -88,7 +89,7 @@ export class CloudConnection {
 			language: MSMARTHOME_LANGUAGE,
 			src: MSMARTHOME_SRC,
 			stamp: dateFormat(new Date(), "yyyymmddHHMMss"),
-			deviceId: this._deviceContext.id.toString(),
+			deviceId: this._device.deviceContext.id.toString(),
 			reqId: crypto.randomBytes(8).toString('hex')
 		};
 		Object.assign(body, data);
@@ -142,7 +143,7 @@ export class CloudConnection {
 			const response = await this._executeRequest("/mj/user/login", /*accessToken*/"", {
 				data: {
 					platform: MSMARTHOME_FORMAT,
-					deviceId: this._deviceContext.id
+					deviceId: this._device.deviceContext.id
 				},
 				iotData: {
 					appId: MSMARTHOME_APP_ID,
@@ -210,13 +211,14 @@ export class CloudConnection {
 	
 				const tokenAndKey = await this._getTokenAndKey(
 					securityContext.cloudAccessToken,
-					this._deviceContext.udpId
+					this._device.deviceContext.udpId
 				);
 				securityContext.token = tokenAndKey.token;
 				securityContext.key = tokenAndKey.key;
 	
 				_LOGGER.debug("CloudConnection::_authenticate() = " + JSON.stringify(securityContext));
 			}
+			this._device.securityContext = securityContext;
 			return securityContext;
 		} catch (error) {
 			_LOGGER.error("Authentication failed:", error);
@@ -224,8 +226,15 @@ export class CloudConnection {
 		}
 	}
 
-	public async executeCommand(securityContext: SecurityContext, endpoint: string, body: any) {
+	public close(): void {
+	}
+
+	public async executeCommand(endpoint: string, body: any): Promise<any> {
 		_LOGGER.debug("CloudConnection::executeCommand()");
-		return this._executeRequest(endpoint, securityContext.cloudAccessToken, this._createRequest(body));
+		if (!this._device.securityContext) {
+			throw new ReferenceError("Not authenticated exception");
+		}
+
+		return this._executeRequest(endpoint, this._device.securityContext.cloudAccessToken, this._createRequest(body));
 	}
 }

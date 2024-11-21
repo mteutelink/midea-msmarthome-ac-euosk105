@@ -14,15 +14,15 @@ export class GetCapabilitiesCommand extends LANCommand {
 		]), FRAME_TYPE.REQUEST);
 	}
 
-	public async execute(securityContext: SecurityContext): Promise<GetCapabilitiesResponse> {
+	public async execute(): Promise<GetCapabilitiesResponse> {
 		_LOGGER.debug("GetCapabilitiesCommand::execute()");
-		let response = await super.execute(securityContext);
+		let response = await super.execute();
 		
 		let getCapabilitiesResponse: GetCapabilitiesResponse = new GetCapabilitiesResponse(response[0]);
 		if (getCapabilitiesResponse.hasMoreCapabilities) {
 			const getMoreCapabilitiesCommand: GetMoreCapabilitiesCommand = new GetMoreCapabilitiesCommand(this._device);
 			
-			response = await getMoreCapabilitiesCommand.execute(securityContext);
+			response = await getMoreCapabilitiesCommand.execute();
 			getCapabilitiesResponse = getCapabilitiesResponse.parse(getCapabilitiesResponse, response[0]);
 		}
 		return getCapabilitiesResponse;

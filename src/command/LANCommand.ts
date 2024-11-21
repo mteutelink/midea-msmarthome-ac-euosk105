@@ -170,8 +170,8 @@ export abstract class LANCommand implements Command {
 		return packet;
 	}
 
-	public async execute(securityContext: SecurityContext): Promise<any> {
+	public async execute(): Promise<any> {
 		_LOGGER.debug("Command::execute()");
-		return this._device.lanConnection.executeCommand(securityContext, this._request);
+		return this._device.lanConnection.executeCommand(this._request);
 	}
 }
