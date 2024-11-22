@@ -41,5 +41,6 @@ export class GetStateResponse extends DeviceState {
 		}
 
 		this.statusCode = data[16];
+		this.freezeProtectionMode = (data[21] & 0x80) === 0x80;
 	}
 }
