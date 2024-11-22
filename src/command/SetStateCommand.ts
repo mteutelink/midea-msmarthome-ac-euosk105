@@ -24,6 +24,7 @@ export class SetStateCommand extends LANCommand {
 		const display = /*displayOn*/false ? 0x10 : 0;
 		const fahrenheit = deviceState.fahrenheit ? 0x04 : 0;
 		const turboAlt = deviceState.turboMode ? 0x20 : 0;
+		const freezeProtectionMode = deviceState.freezeProtectionMode ? 0x80 : 0x00;
 
 		super(device, Buffer.from([
 			0x40,
@@ -37,7 +38,9 @@ export class SetStateCommand extends LANCommand {
 			sleepMode | turboMode | display | fahrenheit,
 			0x00, 0x00, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 
+			freezeProtectionMode,
+			0x00, 0x00,
 		]), FRAME_TYPE.SET);
 	}
 
