@@ -44,9 +44,14 @@ export class Device {
 
 	public async authenticate(securityContext: SecurityContext): Promise<SecurityContext> {
 		_LOGGER.debug("Device::authenticate()");
-		this._securityContext = await this._cloudConnection.authenticate(securityContext);
-		this._securityContext = await this._lanConnection.authenticate(this._securityContext);
-		return this._securityContext;
+		try {
+			this._securityContext = await this._cloudConnection.authenticate(securityContext);
+			this._securityContext = await this._lanConnection.authenticate(this._securityContext);
+			return this._securityContext;
+		} catch (error) {
+			_LOGGER.error("Authentication failed: " + error);
+			throw (error);
+		}
 	}
 
 	close(): void {
