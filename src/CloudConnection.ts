@@ -3,11 +3,12 @@
 import { MSMARTHOME_APP_ID, MSMARTHOME_FORMAT, MSMARTHOME_CLIENT_TYPE, MSMARTHOME_LANGUAGE, MSMARTHOME_SRC, MSMARTHOME_API_URL } from './Constants';
 import { Security } from './Security';
 import { SecurityContext } from './SecurityContext';
+import { Device } from 'Device';
+import { Connection } from 'Connection';
 import { _LOGGER } from './Logger';
 import crypto from 'crypto';
 import dateFormat from 'dateformat';
-import { Device } from 'Device';
-import { Connection } from 'Connection';
+import fetch from 'cross-fetch';
 
 class TokenAndKey {
 	private _token: string;
