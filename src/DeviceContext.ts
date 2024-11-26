@@ -1,5 +1,7 @@
 "use strict";
 
+import { MIDEA_APPLIANCE_TYPE } from "Constants";
+
 export class DeviceContext {
 	private _id: number = 0;
 	private _ssid: string ='';
@@ -9,6 +11,8 @@ export class DeviceContext {
 	private _serial: string ='';
 	private _firmware: string ='';
 	private _udpId: string ='';
+	private _version: number = 0;
+	private _applianceType: MIDEA_APPLIANCE_TYPE;
 
 	// ID
 	public get id(): number {
@@ -80,5 +84,21 @@ export class DeviceContext {
 
 	public set udpId(udpId: string) {
 		this._udpId = udpId;
+	}
+
+	// ENCRYPTION VERSION
+	public get version(): number {
+		return this._version;
+	}
+	public set version(value: number) {
+		this._version = value;
+	}
+
+	// APPLIANCE TYPE
+	public get applianceType(): MIDEA_APPLIANCE_TYPE {
+		return this._applianceType;
+	}
+	public set applianceType(value: MIDEA_APPLIANCE_TYPE) {
+		this._applianceType = value;
 	}
 }
