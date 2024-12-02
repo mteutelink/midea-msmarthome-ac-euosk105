@@ -49,7 +49,7 @@ export class LANConnection {
 	private _disconnect() {
 		_LOGGER.debug("LANConnection::_disconnect()");
 		if (this._socket) {
-			this._socket.destroy();
+			this._socket.end();
 			this._socket = null;
 		}
 	}
