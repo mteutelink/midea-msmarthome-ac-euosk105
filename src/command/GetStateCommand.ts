@@ -2,7 +2,6 @@
 
 import { Device } from "../Device";
 import { GetStateResponse } from './GetStateResponse';
-import { SecurityContext } from '../SecurityContext';
 import { _LOGGER } from '../Logger';
 import { LANCommand } from './LANCommand';
 
