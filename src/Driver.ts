@@ -4,6 +4,9 @@ import { MIDEA_DISCOVER_BROADCAST_MSG, MIDEA_APPLIANCE_TYPE } from './Constants'
 import { Security } from './Security';
 import { Device } from './Device';
 import { DeviceContext } from './DeviceContext';
+import { CloudConnection } from './CloudConnection';
+import { LANSecurityContext } from './LANSecurityContext';
+import { CloudSecurityContext } from './CloudSecurityContext';
 import { _LOGGER } from './Logger';
 import crypto from 'crypto';
 import udp from 'dgram';
@@ -86,7 +89,7 @@ export class Driver {
 		}, 2000));
 	}
 
-	public static async getDevice(id: number): Promise<Device> {
+	public static async getDevice(id: number, cloudSecurityContext: CloudSecurityContext): Promise<Device> {
 		_LOGGER.debug("Driver::getDevice(" + id + ")");
 		try {
 			const devices = await Driver.listDevices();
@@ -95,9 +98,26 @@ export class Driver {
 				_LOGGER.error(`Device with id ${id} not found`);
 				throw new Error(`Device with id ${id} not found`);
 			}
+
+			let lanSecurityContext: LANSecurityContext = await Driver.retrieveTokenAndKeyFromCloud(device, cloudSecurityContext);
+			await device.authenticate(lanSecurityContext);
+
 			return device; 
 		} catch(error) {
 			throw new Error("Exception during device discovery [" + error + "]");
 		}
+	}
+
+	public static async retrieveTokenAndKeyFromCloud(device: Device, cloudSecurityContext: CloudSecurityContext): Promise<LANSecurityContext> {
+		let cloudConnection: CloudConnection = new CloudConnection(device);
+		let updatedCloudSecurityContext: CloudSecurityContext = await cloudConnection.authenticate(cloudSecurityContext);
+
+		const tokenAndKey = await cloudConnection._getTokenAndKey(
+			updatedCloudSecurityContext.accessToken,
+			device.deviceContext.udpId
+		);
+		_LOGGER.debug("Driver::retrieveTokenAndKeyFromCloud(" + device.deviceContext.id + ",  ***) ==> token=" + tokenAndKey.token + ", key=" + tokenAndKey.key);
+
+		return new LANSecurityContext(tokenAndKey.token, tokenAndKey.key)
 	}
 }

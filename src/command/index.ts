@@ -5,6 +5,8 @@ export { GetCapabilitiesCommand } from './GetCapabilitiesCommand';
 export { GetCapabilitiesResponse } from './GetCapabilitiesResponse';
 export { GetPowerUsageCommand } from './GetPowerUsageCommand';
 export { GetPowerUsageResponse } from './GetPowerUsageResponse';
+export { GetPropertiesCommand, PROPERTY_ID } from './GetPropertiesCommand';
+export { GetPropertiesResponse } from './GetPropertiesResponse';
 export { GetStateCommand } from './GetStateCommand';
 export { GetStateResponse } from './GetStateResponse';
 export { ListAppliancesCommand } from './ListAppliancesCommand';

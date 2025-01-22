@@ -13,6 +13,10 @@ export class GetPowerUsageResponse {
 		  n += ((data[18 - i] >> 4) & 0x0F) * m * 10;
 		  m *= 100;
 		}
+		_LOGGER.debug("data[3] = " + data[3]);
+		_LOGGER.debug("data[16] = " + data[16]);
+		_LOGGER.debug("data[17] = " + data[17]);
+		_LOGGER.debug("data[18] = " + data[18]);
 		_LOGGER.debug( n / 10000);
 	}
 }

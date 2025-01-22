@@ -1,6 +1,6 @@
 import { MIDEA_MESSAGE_TYPE } from './Constants';
 import { Security } from './Security';
-import { SecurityContext } from './SecurityContext';
+import { LANSecurityContext } from './LANSecurityContext';
 
 jest.mock('crypto', () => {
 	const original = jest.requireActual('crypto');
@@ -76,8 +76,8 @@ describe('Security', () => {
 		const input = '5a5a0111680020000000000000000000070b181481ea000000820000000000000000000000000000b8436dd15e84d5a4fc6fbf77d2b12486e10c552981b23022cb71ea0fc54dc25ecfa0ce55888ac57fc42a7eacc3285d3780bb4b3f1212bf148536d70cc304e1e6';
 		const expected = '8370008e2066304481c84c1d071dab33777b3fa1eeb153a17c4c011d34d780f3a3188deb80ecbf1bffcf8a0bae06efb9853b0597d21db00148fb64e6276f58bb29df5273bb6f0a543c6ccdd2dc542181836ccb4a24c9a2486c14ac3006af7c33027c66ddb9c36967b89470b00bc37e8cbd149b09e07dd85c908eeae34b9e39146810ab8b1560fa6c9b25b8a6fb838dd6c3dc5d88224b';
 
-		const securityContext = new SecurityContext('user@email.com', 'P4ssw0rd!');
-		securityContext.lanAccessToken = 'e19f1a98bf72d80142885d0813548326a077f323633d5ff4f8d7f96178c3da01';
+		const securityContext = new LANSecurityContext('user@email.com', 'P4ssw0rd!');
+		securityContext.accessToken = 'e19f1a98bf72d80142885d0813548326a077f323633d5ff4f8d7f96178c3da01';
 
 		const result = Security.encode8370(securityContext, Buffer.from(input, 'hex'), 0, MIDEA_MESSAGE_TYPE.ENCRYPTED_REQUEST);
 		expect(result.data.toString('hex')).toEqual(expected);
@@ -86,8 +86,8 @@ describe('Security', () => {
 		const input = '8370008e2063315daaf4301a0a6b6b47239bdd0ec9625968bc29e6445e0510e46a91955bf038363392c68c2738aa2cdfcef587bb9c01d68834ff0e35c6801ff6fa39cbcbafbd7bcadb0974c3eb92f22c3d3f701726840ee5b9de7815f501c4f6a35b919daaa012f05a2c4e11890bd208cb28c162164c9598333f787672909cc62ddda4378420f4afbc0e4d14ad7555e5792db559efcb';
 		const expected = '5a5a011168002080000000000b07080b080b181481ea00000082000000000000000001800000000068c5c69f67ba0c86139068a05121d3ee43ccd1845c128915002fad40511bf42f3febeb492c1b906825abc5e7aa4d0cdb588872c8684108f72dc9021ba8bcc8bd';
 
-		const securityContext = new SecurityContext('user@email.com', 'P4ssw0rd!');
-		securityContext.lanAccessToken = '1d08a2a74251e7ceb82e25df610a35a44f12420cdc9d67d3c32bbe5a7c34ed69';
+		const securityContext = new LANSecurityContext('user@email.com', 'P4ssw0rd!');
+		securityContext.accessToken = '1d08a2a74251e7ceb82e25df610a35a44f12420cdc9d67d3c32bbe5a7c34ed69';
 
 		const result = Security.decode8370(securityContext, Buffer.from(input, 'hex'));
 		expect(result[0].toString('hex')).toEqual(expected);
@@ -95,24 +95,22 @@ describe('Security', () => {
 	it('decode8370 should throw error with message "Not an 8370 message"', () => {
 		const t = () => {
 			const input = '5a5a0111680020000000000000000000070b181481ea000000820000000000000000000000000000b8436dd15e84d5a4fc6fbf77d2b12486e10c552981b23022cb71ea0fc54dc25ecfa0ce55888ac57fc42a7eacc3285d3780bb4b3f1212bf148536d70cc304e1e6';
-			const expected = '8370008e2066304481c84c1d071dab33777b3fa1eeb153a17c4c011d34d780f3a3188deb80ecbf1bffcf8a0bae06efb9853b0597d21db00148fb64e6276f58bb29df5273bb6f0a543c6ccdd2dc542181836ccb4a24c9a2486c14ac3006af7c33027c66ddb9c36967b89470b00bc37e8cbd149b09e07dd85c908eeae34b9e39146810ab8b1560fa6c9b25b8a6fb838dd6c3dc5d88224b';
 
-			const securityContext = new SecurityContext('user@email.com', 'P4ssw0rd!');
-			securityContext.lanAccessToken = 'e19f1a98bf72d80142885d0813548326a077f323633d5ff4f8d7f96178c3da01';
+			const securityContext = new LANSecurityContext('user@email.com', 'P4ssw0rd!');
+			securityContext.accessToken = 'e19f1a98bf72d80142885d0813548326a077f323633d5ff4f8d7f96178c3da01';
 
-			const result = Security.decode8370(securityContext, Buffer.from(input, 'hex'));
+			Security.decode8370(securityContext, Buffer.from(input, 'hex'));
 		};
 		expect(t).toThrow('not an 8370 message');
 	});
 	it('decode8370 should throw error with message "Sign does not match"', () => {
 		const t = () => {
 			const input = '8370008e2063315daaf4301a0a6b6b47239bdd0ec9625968bc29e6445e0510e46a91955bf038363392c68c2738aa2cdfcef587bb9c01d68834ff0e35c6801ff6fa39cbcbafbd7bcadb0974c3eb92f22c3d3f701726840ee5b9de7815f501c4f6a35b919daaa012f05a2c4e11890bd208cb28c162164c9598333f787672909cc62ddda4378420f4afbc0e4d14ad7555e5792db559efcb';
-			const expected = '5a5a011168002080000000000b07080b080b181481ea00000082000000000000000001800000000068c5c69f67ba0c86139068a05121d3ee43ccd1845c128915002fad40511bf42f3febeb492c1b906825abc5e7aa4d0cdb588872c8684108f72dc9021ba8bcc8bd';
 
-			const securityContext = new SecurityContext('user@email.com', 'P4ssw0rd!');
-			securityContext.lanAccessToken = 'e19f1a98bf72d80142885d0813548326a077f323633d5ff4f8d7f96178c3da01';
+			const securityContext = new LANSecurityContext('user@email.com', 'P4ssw0rd!');
+			securityContext.accessToken = 'e19f1a98bf72d80142885d0813548326a077f323633d5ff4f8d7f96178c3da01';
 
-			const result = Security.decode8370(securityContext, Buffer.from(input, 'hex'));
+			Security.decode8370(securityContext, Buffer.from(input, 'hex'));
 		};
 		expect(t).toThrow('sign does not match');
 	});

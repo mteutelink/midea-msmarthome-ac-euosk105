@@ -2,7 +2,6 @@
 
 import { FRAME_TYPE } from '../Constants';
 import { Device } from "../Device";
-import { SecurityContext } from '../SecurityContext';
 import { _LOGGER } from '../Logger';
 import { GetPowerUsageResponse } from './GetPowerUsageResponse';
 import { LANCommand } from './LANCommand';

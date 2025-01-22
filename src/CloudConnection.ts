@@ -2,9 +2,8 @@
 
 import { MSMARTHOME_APP_ID, MSMARTHOME_FORMAT, MSMARTHOME_CLIENT_TYPE, MSMARTHOME_LANGUAGE, MSMARTHOME_SRC, MSMARTHOME_API_URL } from './Constants';
 import { Security } from './Security';
-import { SecurityContext } from './SecurityContext';
+import { CloudSecurityContext } from './CloudSecurityContext';
 import { Device } from 'Device';
-import { Connection } from 'Connection';
 import { _LOGGER } from './Logger';
 import crypto from 'crypto';
 import dateFormat from 'dateformat';
@@ -74,8 +73,8 @@ class CloudAccessToken {
 	}
 }
 
-export class CloudConnection implements Connection {
-	private _device: Device;
+export class CloudConnection {
+	private readonly _device: Device;
 
 	constructor(device: Device) {
 		this._device= device;
@@ -169,7 +168,7 @@ export class CloudConnection implements Connection {
 		}
 	}
 
-	private async _getTokenAndKey(accessToken: string, udpId: string): Promise<TokenAndKey> {
+	public async _getTokenAndKey(accessToken: string, udpId: string): Promise<TokenAndKey> {
 		_LOGGER.debug("CloudConnection::_getTokenAndKey()");
 
 		try {
@@ -191,36 +190,29 @@ export class CloudConnection implements Connection {
 		}
 	}
 
-	public async authenticate(securityContext: SecurityContext): Promise<SecurityContext> {
+	public async authenticate(cloudSecurityContext: CloudSecurityContext): Promise<CloudSecurityContext> {
 		_LOGGER.debug("CloudConnection::authenticate()");
 
 		try {
-			if (!securityContext.cloudAccessToken || 
-				!securityContext.cloudAccessExpiredDate ||
-				(securityContext.cloudAccessExpiredDate.getTime() < Date.now())) {
+			if (!cloudSecurityContext.accessToken || 
+				!cloudSecurityContext.accessExpiredDate ||
+				(cloudSecurityContext.accessExpiredDate.getTime() < Date.now())) {
 
-				securityContext.loginId = await this._getLoginId(securityContext.account);
+					cloudSecurityContext.loginId = await this._getLoginId(cloudSecurityContext.account);
 
-				const cloudAccessToken: CloudAccessToken = await this._login(
-					securityContext.account,
-					securityContext.password,
-					securityContext.loginId
+				const accessToken: CloudAccessToken = await this._login(
+					cloudSecurityContext.account,
+					cloudSecurityContext.password,
+					cloudSecurityContext.loginId
 				);
-				securityContext.cloudAccessToken = cloudAccessToken.token;
-				securityContext.cloudAccessCreateDate = cloudAccessToken.createDate;
-				securityContext.cloudAccessExpiredDate = cloudAccessToken.expiredDate;
+				cloudSecurityContext.accessToken = accessToken.token;
+				cloudSecurityContext.accessCreateDate = accessToken.createDate;
+				cloudSecurityContext.accessExpiredDate = accessToken.expiredDate;
 	
-				const tokenAndKey = await this._getTokenAndKey(
-					securityContext.cloudAccessToken,
-					this._device.deviceContext.udpId
-				);
-				securityContext.token = tokenAndKey.token;
-				securityContext.key = tokenAndKey.key;
-	
-				_LOGGER.debug("CloudConnection::_authenticate() = " + JSON.stringify(securityContext));
+				_LOGGER.debug("CloudConnection::_authenticate() = " + JSON.stringify(cloudSecurityContext));
 			}
-			this._device.securityContext = securityContext;
-			return securityContext;
+			this._device.cloudSecurityContext = cloudSecurityContext;
+			return cloudSecurityContext;
 		} catch (error) {
 			_LOGGER.error("Authentication failed:", error);
 			throw error;
@@ -228,14 +220,15 @@ export class CloudConnection implements Connection {
 	}
 
 	public close(): void {
+		// purposely empty
 	}
 
 	public async executeCommand(endpoint: string, body: any): Promise<any> {
 		_LOGGER.debug("CloudConnection::executeCommand()");
-		if (!this._device.securityContext) {
+		if (!this._device.cloudSecurityContext) {
 			throw new ReferenceError("Not authenticated exception");
 		}
 
-		return this._executeRequest(endpoint, this._device.securityContext.cloudAccessToken, this._createRequest(body));
+		return this._executeRequest(endpoint, this._device.cloudSecurityContext.accessToken, this._createRequest(body));
 	}
 }

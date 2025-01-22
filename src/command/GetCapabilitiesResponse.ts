@@ -1,7 +1,6 @@
 "use strict";
 
 import { DeviceCapabilities } from '../DeviceCapabilities';
-import { _LOGGER } from '../Logger';
 
 export class GetCapabilitiesResponse extends DeviceCapabilities {
 	private _hasMoreCapabilities: boolean = false;
