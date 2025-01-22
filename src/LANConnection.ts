@@ -2,7 +2,7 @@
 
 import { MIDEA_MESSAGE_TYPE } from './Constants';
 import { Security } from './Security';
-import { SecurityContext } from "./SecurityContext";
+import { LANSecurityContext } from "./LANSecurityContext";
 import { _LOGGER } from './Logger';
 import { Socket } from 'net';
 import { Device } from 'Device';
@@ -15,7 +15,7 @@ export class LANConnection {
 	private readonly MAX_NUMBER_OF_RETRIES: number = 3;
 
 	constructor(device: Device) {
-		this._device= device;
+		this._device = device;
 		this._socket = null;
 	}
 
@@ -89,13 +89,13 @@ export class LANConnection {
 	}
 
 
-	public async authenticate(securityContext: SecurityContext): Promise<SecurityContext> {
+	public async authenticate(lanSecurityContext: LANSecurityContext): Promise<LANSecurityContext> {
 		_LOGGER.debug("LANConnection::authenticate()");
 
 		try {
 			const encoded = Security.encode8370(
-				securityContext,
-				Buffer.from(securityContext.token, 'hex'),
+				lanSecurityContext,
+				Buffer.from(lanSecurityContext.token, 'hex'),
 				this._requestCount,
 				MIDEA_MESSAGE_TYPE.HANDSHAKE_REQUEST
 			);
@@ -105,11 +105,11 @@ export class LANConnection {
 			const response = await this._executeRequest(encoded.data);
 			const tcpKeyData = response.slice(8, 72);
 
-			const updatedSecurityContext = await Security.tcpKey(securityContext, tcpKeyData);
+			const updatedSecurityContext = await Security.tcpKey(lanSecurityContext, tcpKeyData);
 
 			this._requestCount = 0;
 			_LOGGER.debug("LanConnection::_authenticate() = " + JSON.stringify(updatedSecurityContext));
-			return (this._device.securityContext = updatedSecurityContext);
+			return (this._device.lanSecurityContext = updatedSecurityContext);
 		} catch (error) {
 			_LOGGER.error("Authentication failed:", error);
 			throw error;
@@ -123,16 +123,16 @@ export class LANConnection {
 	public async executeCommand(request: Buffer, messageType: MIDEA_MESSAGE_TYPE = MIDEA_MESSAGE_TYPE.ENCRYPTED_REQUEST): Promise<any> {
 		_LOGGER.debug("LanConnection::executeCommand()");
 		try {
-			if (!this._device.securityContext) {
+			if (!this._device.lanSecurityContext) {
 				throw new ReferenceError("Not authenticated exception");
 			}
 
 			if (!this._socket) {
-				this._device.securityContext = await this.authenticate(this._device.securityContext);
+				this._device.lanSecurityContext = await this.authenticate(this._device.lanSecurityContext);
 			}
 
 			const encoded = Security.encode8370(
-				this._device.securityContext,
+				this._device.lanSecurityContext,
 				request,
 				this._requestCount,
 				messageType
@@ -141,8 +141,8 @@ export class LANConnection {
 			this._requestCount = encoded.count;
 
 			let response = await this._executeRequest(encoded.data);
-			if(!response || response.length < 13 || response.subarray(8, 13).equals(Buffer.from("ERROR", 'utf8'))) {
-				if(++this._numberOfRetries <= this.MAX_NUMBER_OF_RETRIES) {
+			if (!response || response.length < 13 || response.subarray(8, 13).equals(Buffer.from("ERROR", 'utf8'))) {
+				if (++this._numberOfRetries <= this.MAX_NUMBER_OF_RETRIES) {
 					_LOGGER.debug("RETRYING [" + this._numberOfRetries + "]");
 					this._disconnect();
 					return this.executeCommand(request, messageType);
@@ -152,9 +152,9 @@ export class LANConnection {
 				}
 			} else {
 				this._numberOfRetries = 0;
-				const decodedResponses: Buffer[] = Security.decode8370(this._device.securityContext, response); 
+				const decodedResponses: Buffer[] = Security.decode8370(this._device.lanSecurityContext, response);
 				const packets: Buffer[] = [];
-	
+
 				decodedResponses.forEach(response => {
 					if (response.length > 40 + 16) {
 						response = Security.aesDecrypt(response.slice(40, -16));
@@ -163,7 +163,7 @@ export class LANConnection {
 						packets.push(response);
 					}
 				});
-	
+
 				return (packets);
 			}
 		} catch (error) {

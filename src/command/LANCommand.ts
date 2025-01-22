@@ -93,7 +93,7 @@ export abstract class LANCommand implements Command {
 	  }
 
 	private _createCommand(data: Buffer, frameType: FRAME_TYPE = FRAME_TYPE.REQUEST): Buffer {
-		_LOGGER.debug("Command::_createCommand()");
+		_LOGGER.debug("Command::_createCommand(" + data.toString('hex') + ")");
 		// Create payload with message ID
 		const payload = Buffer.concat([data, Buffer.from([LANCommand._calculcateMessageId()])]);
 

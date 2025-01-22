@@ -1,7 +1,7 @@
 "use strict";
 
 import { MIDEA_MESSAGE_TYPE, MSMARTHOME_SIGN_KEY, MSMARTHOME_APP_KEY, MSMARTHOME_IOT_KEY, MSMARTHOME_HMAC_KEY } from './Constants';
-import { SecurityContext } from './SecurityContext';
+import { LANSecurityContext } from './LANSecurityContext';
 import { _LOGGER } from './Logger';
 import crypto from 'crypto';
 
@@ -76,7 +76,7 @@ export class Security {
 		return encoded;
 	  }
 
-	public static encode8370(securityContext: SecurityContext, data: Buffer, requestCount: number, msgtype: MIDEA_MESSAGE_TYPE) {
+	public static encode8370(lanSecurityContext: LANSecurityContext, data: Buffer, requestCount: number, msgtype: MIDEA_MESSAGE_TYPE) {
 		_LOGGER.debug("Security::encode8370(" + msgtype + ")");
 		let header: Buffer = Buffer.from([0x83, 0x70] );
 		let size: number = data.length;
@@ -111,7 +111,7 @@ export class Security {
 	
 		if ([MIDEA_MESSAGE_TYPE.ENCRYPTED_REQUEST, MIDEA_MESSAGE_TYPE.ENCRYPTED_RESPONSE].includes(msgtype)) {
 			const sign = crypto.createHash('sha256').update(Buffer.concat([header, data])).digest();
-			data = Buffer.concat([Security.aesCbcEncrypt(data, Buffer.from(securityContext.lanAccessToken, 'hex')), sign]);
+			data = Buffer.concat([Security.aesCbcEncrypt(data, Buffer.from(lanSecurityContext.accessToken, 'hex')), sign]);
 		}
 	
 		let encoded = Buffer.concat([header,  data])
@@ -119,7 +119,7 @@ export class Security {
 		return { data: encoded, count: requestCount};
 	}
 
-	public static decode8370(securityContext: SecurityContext, data: Buffer): any[] {
+	public static decode8370(lanSecurityContext: LANSecurityContext, data: Buffer): any[] {
 		_LOGGER.debug("Security::decode8370()");
 		if (data.length < 6) {
 			return [[], data];
@@ -152,7 +152,7 @@ export class Security {
 		if ([MIDEA_MESSAGE_TYPE.ENCRYPTED_REQUEST, MIDEA_MESSAGE_TYPE.ENCRYPTED_RESPONSE].includes(msgtype)) {
 			const sign = data.slice(-32);
 			data = data.slice(0, -32);
-			data = Security.aesCbcDecrypt(data, Buffer.from(securityContext.lanAccessToken, 'hex'));
+			data = Security.aesCbcDecrypt(data, Buffer.from(lanSecurityContext.accessToken, 'hex'));
 	
 			const computedSign = crypto.createHash('sha256').update(Buffer.concat([header, data])).digest();
 			if (!sign.equals(computedSign)) {
@@ -168,7 +168,7 @@ export class Security {
 		data = data.slice(2); // Skip response count
 	
 		if (leftover && leftover.length > 0) {
-			const [packets, incomplete] = Security.decode8370(securityContext, leftover);
+			const [packets, incomplete] = Security.decode8370(lanSecurityContext, leftover);
 			return [[data, ...packets], incomplete];
 		}
 	
@@ -177,7 +177,7 @@ export class Security {
 		return decoded;
 	}
 
-	public static async tcpKey(securityContext: SecurityContext, response: Buffer): Promise<SecurityContext> {
+	public static async tcpKey(lanSecurityContext: LANSecurityContext, response: Buffer): Promise<LANSecurityContext> {
 		_LOGGER.debug("Security::tcpKey()");
 		return new Promise((resolve, reject) => {
 			if (response.toString() === 'ERROR') {
@@ -190,16 +190,16 @@ export class Security {
 			}
 			const payload = response.slice(0, 32);
 			const sign = response.slice(32);
-			const plain = this.aesCbcDecrypt(payload, Buffer.from(securityContext.key, 'hex'));
+			const plain = this.aesCbcDecrypt(payload, Buffer.from(lanSecurityContext.key, 'hex'));
 			if (!crypto.timingSafeEqual(crypto.createHash('sha256').update(plain).digest(), sign)) {
 			  _LOGGER.error('Sign does not match');
 			  reject('Sign does not match');
 			  return [Buffer.alloc(0), false];
 			}
 
-			securityContext.lanAccessToken = Security.strxor(plain, Buffer.from(securityContext.key, 'hex')).toString('hex');
-			_LOGGER.debug("Security::tcpKey() = " + securityContext.lanAccessToken);
-			resolve(securityContext);
+			lanSecurityContext.accessToken = Security.strxor(plain, Buffer.from(lanSecurityContext.key, 'hex')).toString('hex');
+			_LOGGER.debug("Security::tcpKey() = " + lanSecurityContext.accessToken);
+			resolve(lanSecurityContext);
 		});
 
 	  }

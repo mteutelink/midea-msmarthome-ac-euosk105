@@ -1,7 +1,6 @@
 "use strict";
 
 import { Device } from "../Device";
-import { SecurityContext } from '../SecurityContext';
 import { _LOGGER } from '../Logger';
 import { CloudCommand } from './CloudCommand';
 import { ListHomeGroupsResponse } from "./ListHomeGroupsResponse";

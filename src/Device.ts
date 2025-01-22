@@ -1,20 +1,19 @@
 "use strict";
 
 import { DeviceContext } from './DeviceContext';
-import { SecurityContext } from './SecurityContext';
-import { CloudConnection } from './CloudConnection';
+import { LANSecurityContext } from './LANSecurityContext';
+import { CloudSecurityContext } from './CloudSecurityContext';
 import { LANConnection } from './LANConnection';
 import { _LOGGER } from './Logger';
 
 export class Device {
 	private readonly _deviceContext: DeviceContext;
-	private _cloudConnection: CloudConnection;
 	private readonly _lanConnection: LANConnection;
-	private _securityContext: SecurityContext = null;
+	private _lanSecurityContext: LANSecurityContext = null;
+	private _cloudSecurityContext: CloudSecurityContext = null;
 
 	constructor(deviceContext: DeviceContext) {
 		this._deviceContext = deviceContext;
-		this._cloudConnection = new CloudConnection(this);
 		this._lanConnection = new LANConnection(this);
 	}
 
@@ -23,31 +22,34 @@ export class Device {
 		return this._deviceContext;
 	}
 
-	// CLOUDCONNECTION
-	public get cloudConnection(): CloudConnection {
-		return this._cloudConnection;
-	}
-
 	// LANCONNECTION
 	public get lanConnection(): LANConnection {
 		return this._lanConnection;
 	}
 
 	// SECURITYCONTEXT
-	public get securityContext(): SecurityContext | undefined {
-		return this._securityContext;
+	public get lanSecurityContext(): LANSecurityContext | undefined {
+		return this._lanSecurityContext;
 	}
 
-	public set securityContext(value: SecurityContext | undefined) {
-		this._securityContext = value;
+	public set lanSecurityContext(value: LANSecurityContext | undefined) {
+		this._lanSecurityContext = value;
 	}
 
-	public async authenticate(securityContext: SecurityContext): Promise<SecurityContext> {
+	// CLOUDSECURITYCONTEXT
+	public get cloudSecurityContext(): CloudSecurityContext | undefined {
+		return this._cloudSecurityContext;
+	}
+
+	public set cloudSecurityContext(value: CloudSecurityContext | undefined) {
+		this._cloudSecurityContext = value;
+	}
+
+	public async authenticate(lanSecurityContext: LANSecurityContext): Promise<LANSecurityContext> {
 		_LOGGER.debug("Device::authenticate()");
 		try {
-			this._securityContext = await this._cloudConnection.authenticate(securityContext);
-			this._securityContext = await this._lanConnection.authenticate(this._securityContext);
-			return this._securityContext;
+			this._lanSecurityContext = await this._lanConnection.authenticate(lanSecurityContext);
+			return this._lanSecurityContext;
 		} catch (error) {
 			_LOGGER.error("Authentication failed: " + error);
 			throw (error);
@@ -56,6 +58,5 @@ export class Device {
 
 	close(): void {
 		this._lanConnection.close();
-		this._cloudConnection.close();
 	}
 }
