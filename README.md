@@ -23,7 +23,7 @@ Under the hood a user will be logged in into the MSmartHome Cloud and then local
 
 ```js
 	let cloudSecurityContext: CloudSecurityContext = new CloudSecurityContext('<account>', '<password>');
-	Driver.getDevice(/*id*/123456789012345, cloudSecurityContext).then(async device: Device => {
+	Driver.getDevice(/*id*/123456789012345, cloudSecurityContext).then(async device => {
 
 		const getState: GetStateCommand = new GetStateCommand(device);
 		let state: GetStateResponse = await getState.execute();
@@ -31,7 +31,7 @@ Under the hood a user will be logged in into the MSmartHome Cloud and then local
 
 		state.powerOn = true;
 		const setState: SetStateCommand = new SetStateCommand(device, state);
-		state: GetStateResponse = await setState.execute();
+		state = await setState.execute();
 		console.log(JSON.stringify(state));
 	})
 ```

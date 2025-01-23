@@ -1,6 +1,6 @@
 "use strict";
 
-import { MIDEA_APPLIANCE_TYPE } from "Constants";
+import { MIDEA_APPLIANCE_TYPE } from "MideaConstants";
 
 export class DeviceContext {
 	private _id: number = 0;

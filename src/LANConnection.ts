@@ -1,6 +1,6 @@
 "use strict";
 
-import { MIDEA_MESSAGE_TYPE } from './Constants';
+import { MIDEA_MESSAGE_TYPE } from './MideaConstants';
 import { Security } from './Security';
 import { LANSecurityContext } from "./LANSecurityContext";
 import { _LOGGER } from './Logger';

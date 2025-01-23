@@ -1,6 +1,6 @@
 "use strict";
 
-import { FRAME_TYPE } from '../Constants';
+import { FRAME_TYPE } from '../MideaConstants';
 import { Device } from "../Device";
 import { _LOGGER } from '../Logger';
 import { GetCapabilitiesResponse } from './GetCapabilitiesResponse';

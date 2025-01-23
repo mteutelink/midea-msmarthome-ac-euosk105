@@ -1,6 +1,6 @@
 "use strict";
 
-import { MSMARTHOME_APP_ID, MSMARTHOME_FORMAT, MSMARTHOME_CLIENT_TYPE, MSMARTHOME_LANGUAGE, MSMARTHOME_SRC, MSMARTHOME_API_URL } from './Constants';
+import { MSMARTHOME_APP_ID, MSMARTHOME_FORMAT, MSMARTHOME_CLIENT_TYPE, MSMARTHOME_LANGUAGE, MSMARTHOME_SRC, MSMARTHOME_API_URL } from './MideaConstants';
 import { Security } from './Security';
 import { CloudSecurityContext } from './CloudSecurityContext';
 import { Device } from 'Device';
