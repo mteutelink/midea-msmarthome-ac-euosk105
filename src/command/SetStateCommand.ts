@@ -2,7 +2,7 @@
 
 import { Device } from "../Device";
 import { DeviceState } from '../DeviceState';
-import { FRAME_TYPE } from '../Constants';
+import { FRAME_TYPE } from '../MideaConstants';
 import { GetStateResponse } from './GetStateResponse';
 import { _LOGGER } from '../Logger';
 import { GetStateCommand } from './GetStateCommand';

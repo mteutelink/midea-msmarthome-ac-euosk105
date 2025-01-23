@@ -1,6 +1,6 @@
 "use strict";
 
-import { MIDEA_MESSAGE_TYPE, MSMARTHOME_SIGN_KEY, MSMARTHOME_APP_KEY, MSMARTHOME_IOT_KEY, MSMARTHOME_HMAC_KEY } from './Constants';
+import { MIDEA_MESSAGE_TYPE, MSMARTHOME_SIGN_KEY, MSMARTHOME_APP_KEY, MSMARTHOME_IOT_KEY, MSMARTHOME_HMAC_KEY } from './MideaConstants';
 import { LANSecurityContext } from './LANSecurityContext';
 import { _LOGGER } from './Logger';
 import crypto from 'crypto';

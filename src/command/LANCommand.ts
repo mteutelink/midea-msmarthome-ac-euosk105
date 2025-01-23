@@ -1,6 +1,6 @@
 "use strict";
 
-import { MIDEA_APPLIANCE_TYPE, FRAME_TYPE } from '../Constants';
+import { MIDEA_APPLIANCE_TYPE, FRAME_TYPE } from '../MideaConstants';
 import { Device } from '../Device';
 import { Security } from '../Security';
 import { _LOGGER } from '../Logger';
