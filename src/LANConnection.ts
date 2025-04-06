@@ -5,7 +5,7 @@ import { Security } from './Security';
 import { LANSecurityContext } from "./LANSecurityContext";
 import { _LOGGER } from './Logger';
 import { Socket } from 'net';
-import { Device } from 'Device';
+import { Device } from './Device';
 
 export class LANConnection {
 	private readonly _device: Device;
@@ -73,7 +73,7 @@ export class LANConnection {
 						if (response.length === 0) {
 							_LOGGER.error(`Server Closed Socket`);
 							this._disconnect();
-							reject();
+							reject(new Error("Server closed the socket unexpectedly"));
 						}
 						resolve(response);
 					});
@@ -108,8 +108,10 @@ export class LANConnection {
 			const updatedSecurityContext = await Security.tcpKey(lanSecurityContext, tcpKeyData);
 
 			this._requestCount = 0;
+
 			_LOGGER.debug("LanConnection::_authenticate() = " + JSON.stringify(updatedSecurityContext));
-			return (this._device.lanSecurityContext = updatedSecurityContext);
+			this._device.lanSecurityContext = updatedSecurityContext;
+			return updatedSecurityContext;
 		} catch (error) {
 			_LOGGER.error("Authentication failed:", error);
 			throw error;

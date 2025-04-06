@@ -4,7 +4,7 @@ import { Device } from '../Device';
 import { _LOGGER } from '../Logger';
 import { Command } from './Command';
 import { CloudConnection } from '../CloudConnection';
-import { CloudSecurityContext } from 'CloudSecurityContext';
+import { CloudSecurityContext } from '../CloudSecurityContext';
 
 export abstract class CloudCommand implements Command {
 	protected _device: Device;

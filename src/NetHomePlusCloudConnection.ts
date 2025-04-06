@@ -151,7 +151,6 @@ export class NetHomePlusCloudConnection extends CloudConnection {
             cloudSecurityContext.sessionId = await this._login(cloudSecurityContext.account, cloudSecurityContext.password, cloudSecurityContext.loginId);
             _LOGGER.debug("NetHomePlusCloudConnection::_authenticate() = " + JSON.stringify(cloudSecurityContext));
 
-            //this._device.cloudSecurityContext = cloudSecurityContext;
             return cloudSecurityContext;
         }
         catch (error) {

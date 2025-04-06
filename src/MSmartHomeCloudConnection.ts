@@ -2,7 +2,7 @@
 import { MSMARTHOME_API_URL, MSMARTHOME_APP_ID, MSMARTHOME_APP_KEY, MSMARTHOME_CLIENT_TYPE, MSMARTHOME_FORMAT, MSMARTHOME_HMAC_KEY, MSMARTHOME_IOT_KEY, MSMARTHOME_LANGUAGE, MSMARTHOME_SRC } from './MSmartHomeConstants';
 import { _LOGGER } from './Logger';
 import { CloudConnection, TokenAndKey } from './CloudConnection';
-import { CloudSecurityContext } from 'CloudSecurityContext';
+import { CloudSecurityContext } from './CloudSecurityContext';
 import crypto from 'crypto';
 import dateFormat from 'dateformat';
 import fetch from 'cross-fetch';
@@ -216,7 +216,6 @@ export class MSmartHomeCloudConnection extends CloudConnection {
 	
 				_LOGGER.debug("MSmartHomeCloudConnection::_authenticate() = " + JSON.stringify(cloudSecurityContext));
 			}
-			//this._device.cloudSecurityContext = cloudSecurityContext;
 			return cloudSecurityContext;
 		} catch (error) {
 			_LOGGER.error("Authentication failed:", error);
