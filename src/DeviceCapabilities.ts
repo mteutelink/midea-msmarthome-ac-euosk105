@@ -41,9 +41,6 @@ export class DeviceCapabilities {
 	private _windOffMe: boolean = false;
 	private _windOnMe: boolean = false;
 
-	constructor() {
-	}
-
 	public get activeClean(): boolean {
 		return this._activeClean;
 	}

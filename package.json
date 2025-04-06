@@ -19,7 +19,7 @@
     "test": "jest"
   },
   "name": "midea-msmarthome-ac-euosk105",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "This package contains a Typescript implementation of the Midea MSmartHome AC API via the osk105 wifi adapter.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

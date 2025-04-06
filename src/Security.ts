@@ -1,9 +1,11 @@
 "use strict";
 
-import { MIDEA_MESSAGE_TYPE, MSMARTHOME_SIGN_KEY, MSMARTHOME_APP_KEY, MSMARTHOME_IOT_KEY, MSMARTHOME_HMAC_KEY } from './MideaConstants';
+import { MIDEA_MESSAGE_TYPE } from './MideaConstants';
+import { MSMARTHOME_SIGN_KEY, MSMARTHOME_APP_KEY, MSMARTHOME_IOT_KEY, MSMARTHOME_HMAC_KEY } from './MSmartHomeConstants';
 import { LANSecurityContext } from './LANSecurityContext';
 import { _LOGGER } from './Logger';
 import crypto from 'crypto';
+import { NETHOMEPLUS_APP_KEY } from './NetHomePlusConstants';
 
 export class Security {
 	public static aesEncrypt(raw: Buffer): Buffer {
@@ -43,30 +45,6 @@ export class Security {
 		const encoded = crypto.createHash('md5').update(MSMARTHOME_SIGN_KEY).digest();
 		_LOGGER.debug("Security::_encodedSignKey() = " + encoded.toString('hex'));
 		return encoded;
-	}
-
-	public static sign(data:string, random: string): string {
-		_LOGGER.debug("Security::sign(" + data + ", " + random + ")");
-		const msg: string = MSMARTHOME_IOT_KEY + data + random;
-		const sign = crypto.createHmac('SHA256', MSMARTHOME_HMAC_KEY).update(msg).digest('hex');
-		_LOGGER.debug("Security::sign() = " + sign);
-		return sign;
-	}
-	public static encryptPassword(loginId: string, password: string): string {
-		_LOGGER.debug("Security::encryptPassword(****, ****)");
-		const hashedPassword: string = crypto.createHash('sha256').update(password, 'utf-8').digest('hex');
-		const encrypted = crypto.createHash('sha256').update(`${loginId}${hashedPassword}${MSMARTHOME_APP_KEY}`, 'utf-8').digest('hex');
-		_LOGGER.debug("Security::encryptPassword() = " + encrypted);
-		return encrypted;
-	}
-	
-	public static encryptIAMPassword(loginId: string, password: string): string {
-		_LOGGER.debug("Security::encryptIAMPassword(****, ****)");
-		const mdPassword: string = crypto.createHash('md5').update(password, 'utf-8').digest('hex');
-		const mdMdPassword: string = crypto.createHash('md5').update(mdPassword, 'utf-8').digest('hex');
-		const encrypted = crypto.createHash('sha256').update(`${loginId}${mdMdPassword}${MSMARTHOME_APP_KEY}`, 'utf-8').digest('hex');
-		_LOGGER.debug("Security::encryptIAMPassword() = " + encrypted);
-		return encrypted;
 	}
 
 	public static encode32(data: Buffer) {

@@ -6,11 +6,12 @@ import { Device } from './Device';
 import { DeviceContext } from './DeviceContext';
 import { CloudConnection } from './CloudConnection';
 import { LANSecurityContext } from './LANSecurityContext';
-import { CloudSecurityContext } from './CloudSecurityContext';
+import { CloudSecurityContext, CONNECTION_TYPE } from './CloudSecurityContext';
 import { _LOGGER } from './Logger';
 import crypto from 'crypto';
 import udp from 'dgram';
 import util from 'util';
+import { NETHOMEPLUS_DEFAULT_ACCOUNT, NETHOMEPLUS_DEFAULT_PASSWORD } from './NetHomePlusConstants';
 
 export class Driver {
 	public static async listDevices(): Promise<Device[]> {
@@ -101,19 +102,24 @@ export class Driver {
 
 			let lanSecurityContext: LANSecurityContext = await Driver.retrieveTokenAndKeyFromCloud(device, cloudSecurityContext);
 			await device.authenticate(lanSecurityContext);
-
 			return device; 
 		} catch(error) {
 			throw new Error("Exception during device discovery [" + error + "]");
 		}
 	}
 
-	public static async retrieveTokenAndKeyFromCloud(device: Device, cloudSecurityContext: CloudSecurityContext): Promise<LANSecurityContext> {
-		let cloudConnection: CloudConnection = new CloudConnection(device);
-		let updatedCloudSecurityContext: CloudSecurityContext = await cloudConnection.authenticate(cloudSecurityContext);
+	public static async retrieveTokenAndKeyFromCloud(device: Device, cloudSecurityContext: CloudSecurityContext | null): Promise<LANSecurityContext> {
+		// MSMARTHOME HAS SHUT DOWN THE TOKEN API SERVICE: TOKENS AND KEYS SHOULD ALWAYS BE RETRIEVED VIA NETHOME PLUs
+		let updatedCloudSecurityContext: CloudSecurityContext = cloudSecurityContext;
+		if (!cloudSecurityContext || cloudSecurityContext.connectionType === CONNECTION_TYPE.MSMARTHOME) {
+			updatedCloudSecurityContext = new CloudSecurityContext(NETHOMEPLUS_DEFAULT_ACCOUNT, NETHOMEPLUS_DEFAULT_PASSWORD, CONNECTION_TYPE.NETHOMEPLUS)
+		}
+		let cloudConnection: CloudConnection = updatedCloudSecurityContext.getCloudConnection(device);
+
+		updatedCloudSecurityContext = await cloudConnection.authenticate(updatedCloudSecurityContext);
 
 		const tokenAndKey = await cloudConnection._getTokenAndKey(
-			updatedCloudSecurityContext.accessToken,
+			updatedCloudSecurityContext.sessionId,
 			device.deviceContext.udpId
 		);
 		_LOGGER.debug("Driver::retrieveTokenAndKeyFromCloud(" + device.deviceContext.id + ",  ***) ==> token=" + tokenAndKey.token + ", key=" + tokenAndKey.key);
