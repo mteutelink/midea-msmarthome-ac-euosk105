@@ -1,17 +1,5 @@
 "use strict";
 
-export const MSMARTHOME_CLIENT_TYPE: number = 1;  // Android
-export const MSMARTHOME_FORMAT: number = 2; // JSON
-export const MSMARTHOME_LANGUAGE: string = "en_US";
-export const MSMARTHOME_SRC: string = "1010";
-export const MSMARTHOME_APP_KEY: string = "ac21b9f9cbfe4ca5a88562ef25e2b768";
-export const MSMARTHOME_APP_ID: string = "1010";
-export const MSMARTHOME_API_URL: string = "https://mp-prod.appsmb.com/mas/v5/app/proxy?alias=";
-export const MSMARTHOME_IOT_KEY: string = "meicloud";
-export const MSMARTHOME_SIGN_KEY: string = "xhdiwjnchekd4d512chdjx5d8e4c394D2D7S";
-export const MSMARTHOME_HMAC_KEY: string = "PROD_VnoClJI9aikS8dyy";
-export const MSMARTHOME_PROXIED: string = "v5";
-
 export const enum MIDEA_APPLIANCE_TYPE {
 	DEHUMIDIFIER = 0xA1,
 	AIRCONDITIONER = 0xAC,
@@ -47,3 +35,6 @@ export const enum FRAME_TYPE {
 	REPORT = 0x04,
 	ABNL_REPORT = 0x06
 }
+
+export const DEFAULT_ACCOUNT = "nethome+us@mailinator.com";
+export const DEFAULT_PASSWORD = "password1";

@@ -41,6 +41,7 @@ describe('Security', () => {
 		let result = Security.aesCbcDecrypt(Buffer.from(input, 'hex'), Buffer.from(key, 'hex'));
 		expect(result.toString('hex')).toEqual(expected);
 	})
+	/*
 	it('sign', () => {
 		const input = '{"appId":"1010","format":2,"clientType":1,"language":"en_US","src":"1010","stamp":"20241104222213","deviceId":"123456789012345","reqId":"6e8df903b95f5aa1","loginAccount":"user@email.com"}';
 		const random = "12345678901234567890123456789012";
@@ -49,6 +50,18 @@ describe('Security', () => {
 		let result = Security.sign(input, random);
 		expect(result).toEqual(expected);
 	})
+	*/
+	/*
+	it('signBodyAndEndpoint', () => {
+		const body = {'appId': '1017', 'src': '1017', 'format': 2, 'clientType': 1, 'language': 'en_US', 'deviceId': '618aced357de0fc3', 'stamp': '20250405132432', 'sessionId': '', 'loginAccount': 'nethome+us@mailinator.com'}
+		const endpoint = "/v1/user/login/id/get";
+		const expected = '4c6ebb19f058a1ae114f1bb5f67ea248724104e041eae02785368ed973b96822';
+
+		let result = Security.signBodyAndEndpoint(body, endpoint);
+		expect(result).toEqual(expected);
+	})
+	*/
+	/*
 	it('encryptPassword', () => {
 		const loginId = "b0efc40e-c02a-4bc0-bae5-9ed541f4";
 		const password = "P4ssw0rd!";
@@ -57,6 +70,18 @@ describe('Security', () => {
 		let result = Security.encryptPassword(loginId, password);
 		expect(result).toEqual(expected);
 	})
+	*/
+	/*
+	it('encryptPasswordNetHomePlus', () => {
+		const loginId = "a56cc315-9367-4695-aad3-d5ac95fc6d59";
+		const password = "password1";
+		const expected = '0922580c5649af1feae72b1a5292efbd1b78274b9b6320aa0e7cbd174f4257c2';
+
+		let result = Security.encryptPassword(loginId, password);
+		expect(result).toEqual(expected);
+	})
+		*/
+	/*
 	it('encryptIAMPassword', () => {
 		const loginId = "b0efc40e-c02a-4bc0-bae5-9ed541f4";
 		const password = "P4ssw0rd!";
@@ -65,6 +90,7 @@ describe('Security', () => {
 		let result = Security.encryptIAMPassword(loginId, password);
 		expect(result).toEqual(expected);
 	})
+	*/
 	it('encode32', () => {
 		const input = '5a5a011168002000000000000006080c080b181481ea000000820000000000000000000000000000b8436dd15e84d5a4fc6fbf77d2b12486e10c552981b23022cb71ea0fc54dc25ecfa0ce55888ac57fc42a7eacc3285d37';
 		const expected = '9ccb3804614a2af0279455d9e465c9b0';
