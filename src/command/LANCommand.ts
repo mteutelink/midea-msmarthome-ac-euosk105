@@ -9,7 +9,7 @@ import dateFormat from 'dateformat';
 
 export abstract class LANCommand implements Command {
 	protected _device: Device;
-	private _request: Buffer;
+	private readonly _request: Buffer;
 	static _messageId: number = 0;
 
 	private readonly CRC8_854_TABLE = [

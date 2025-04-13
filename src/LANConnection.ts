@@ -5,7 +5,7 @@ import { Security } from './Security';
 import { LANSecurityContext } from "./LANSecurityContext";
 import { _LOGGER } from './Logger';
 import { Socket } from 'net';
-import { Device } from 'Device';
+import { Device } from './Device';
 
 export class LANConnection {
 	private readonly _device: Device;
@@ -35,7 +35,7 @@ export class LANConnection {
 			socket.on('error', (error: Error) => {
 				_LOGGER.error(`Connect Error: ${this._device.deviceContext.host}:${this._device.deviceContext.port} ${error}`);
 				this._disconnect();
-				reject(error);
+				reject(error instanceof Error ? error : new Error(String(error)));
 			});
 
 			socket.connect(this._device.deviceContext.port, this._device.deviceContext.host, () => {
@@ -61,11 +61,11 @@ export class LANConnection {
 			return this._connect().then(socket => {
 
 				_LOGGER.http(`Sending message: ${message.toString('hex')}`);
-				socket.write(message, (err) => {
-					if (err) {
-						_LOGGER.error(`Send Error: ${err}`);
+				socket.write(message, (error) => {
+					if (error) {
+						_LOGGER.error(`Send Error: ${error}`);
 						this._disconnect();
-						reject(err);
+						reject(error instanceof Error ? error : new Error(String(error)));
 					}
 
 					socket.once('data', (response: Buffer) => {
@@ -73,7 +73,7 @@ export class LANConnection {
 						if (response.length === 0) {
 							_LOGGER.error(`Server Closed Socket`);
 							this._disconnect();
-							reject();
+							reject(new Error("Server closed the socket unexpectedly"));
 						}
 						resolve(response);
 					});
@@ -84,7 +84,11 @@ export class LANConnection {
 						resolve(Buffer.alloc(0));
 					});
 				});
-			});
+			}).catch((error) => {
+				_LOGGER.error(`Connection Error: ${error}`);
+				this._disconnect();
+				reject(error instanceof Error ? error : new Error(String(error)));
+			})
 		});
 	}
 
@@ -92,7 +96,7 @@ export class LANConnection {
 	public async authenticate(lanSecurityContext: LANSecurityContext): Promise<LANSecurityContext> {
 		_LOGGER.debug("LANConnection::authenticate()");
 
-		try {
+		return new Promise((resolve, reject) => {
 			const encoded = Security.encode8370(
 				lanSecurityContext,
 				Buffer.from(lanSecurityContext.token, 'hex'),
@@ -102,18 +106,24 @@ export class LANConnection {
 
 			this._requestCount = encoded.count;
 
-			const response = await this._executeRequest(encoded.data);
-			const tcpKeyData = response.slice(8, 72);
-
-			const updatedSecurityContext = await Security.tcpKey(lanSecurityContext, tcpKeyData);
-
-			this._requestCount = 0;
-			_LOGGER.debug("LanConnection::_authenticate() = " + JSON.stringify(updatedSecurityContext));
-			return (this._device.lanSecurityContext = updatedSecurityContext);
-		} catch (error) {
-			_LOGGER.error("Authentication failed:", error);
-			throw error;
-		}
+			return this._executeRequest(encoded.data).then((response: Buffer) => {
+				const tcpKeyData = response.slice(8, 72);
+				return Security.tcpKey(lanSecurityContext, tcpKeyData).then((updatedSecurityContext: LANSecurityContext) => {
+					_LOGGER.debug("LanConnection::authenticate() = " + JSON.stringify(updatedSecurityContext));
+					this._device.lanSecurityContext = updatedSecurityContext;
+					this._requestCount = 0;
+					resolve(updatedSecurityContext);
+				}).catch((error) => {
+					_LOGGER.error("Error during TCP key generation:", error);
+					this._disconnect();
+					reject(error instanceof Error ? error : new Error(String(error)));
+				});
+			}).catch((error) => {
+				_LOGGER.error("Error during authentication:", error);
+				this._disconnect();
+				reject(error instanceof Error ? error : new Error(String(error)));
+			});
+		});
 	}
 
 	public close(): void {
@@ -122,13 +132,20 @@ export class LANConnection {
 
 	public async executeCommand(request: Buffer, messageType: MIDEA_MESSAGE_TYPE = MIDEA_MESSAGE_TYPE.ENCRYPTED_REQUEST): Promise<any> {
 		_LOGGER.debug("LanConnection::executeCommand()");
-		try {
+		return new Promise((resolve, reject) => {
 			if (!this._device.lanSecurityContext) {
-				throw new ReferenceError("Not authenticated exception");
+				reject(new ReferenceError("Not authenticated exception"));
 			}
 
 			if (!this._socket) {
-				this._device.lanSecurityContext = await this.authenticate(this._device.lanSecurityContext);
+				return this.authenticate(this._device.lanSecurityContext).then((updatedLanSecurityContext) => {
+					this._device.lanSecurityContext = updatedLanSecurityContext;
+					return this.executeCommand(request, messageType);
+				}).catch((error) => {
+					_LOGGER.error("Error during authentication:", error);
+					this._disconnect();
+					reject(error instanceof Error ? error : new Error(String(error)));
+				});
 			}
 
 			const encoded = Security.encode8370(
@@ -140,35 +157,40 @@ export class LANConnection {
 
 			this._requestCount = encoded.count;
 
-			let response = await this._executeRequest(encoded.data);
-			if (!response || response.length < 13 || response.subarray(8, 13).equals(Buffer.from("ERROR", 'utf8'))) {
-				if (++this._numberOfRetries <= this.MAX_NUMBER_OF_RETRIES) {
-					_LOGGER.debug("RETRYING [" + this._numberOfRetries + "]");
+			return this._executeRequest(encoded.data).then((response: Buffer) => {
+				if (response.length === 0) {
+					_LOGGER.error(`Server Closed Socket`);
 					this._disconnect();
-					return this.executeCommand(request, messageType);
+					reject(new Error("Server closed the socket unexpectedly"));
+				} else if (response.length < 13 || response.subarray(8, 13).equals(Buffer.from("ERROR", 'utf8'))) {
+					if (++this._numberOfRetries <= this.MAX_NUMBER_OF_RETRIES) {
+						_LOGGER.debug("RETRYING [" + this._numberOfRetries + "]");
+						this._disconnect();
+						return this.executeCommand(request, messageType);
+					} else {
+						_LOGGER.error("Error occured during command execution; retried but nothing helps");
+						this._disconnect();
+						reject(new Error("Error occured during command execution"));
+					}
 				} else {
-					_LOGGER.error("Error occured during command execution; retried but nothing helps");
-					throw new Error("Error occured during command execution");
+					this._numberOfRetries = 0;
+					const decodedResponses: Buffer[] = Security.decode8370(this._device.lanSecurityContext, response);
+					const packets: Buffer[] = [];
+					decodedResponses.forEach(response => {
+						if (response.length > 40 + 16) {
+							response = Security.aesDecrypt(response.slice(40, -16));
+						}
+						if (response.length > 10) {
+							packets.push(response);
+						}
+					});
+					resolve(packets);
 				}
-			} else {
-				this._numberOfRetries = 0;
-				const decodedResponses: Buffer[] = Security.decode8370(this._device.lanSecurityContext, response);
-				const packets: Buffer[] = [];
-
-				decodedResponses.forEach(response => {
-					if (response.length > 40 + 16) {
-						response = Security.aesDecrypt(response.slice(40, -16));
-					}
-					if (response.length > 10) {
-						packets.push(response);
-					}
-				});
-
-				return (packets);
-			}
-		} catch (error) {
-			_LOGGER.error("executeCommand failed:", error);
-			throw error;
-		}
+			}).catch((error) => {
+				_LOGGER.error("Error during command execution:", error);
+				this._disconnect();
+				reject(error instanceof Error ? error : new Error(String(error)));
+			});
+		});
 	}
 }
