@@ -78,3 +78,83 @@ test('six-byte temperature capability does not guess decimal support', () => {
   const caps = new GetCapabilitiesResponse(page([[0x0225, [32, 60, 34, 60, 32, 60]]]));
   assert.equal(caps.getSupport('decimals'), 'unknown');
 });
+
+test('extended feature advertisements are decoded independently', () => {
+  const caps = new GetCapabilitiesResponse(page([
+    [0x0009, [1]], [0x000a, [0]], [0x021e, [1]], [0x0067, [4]],
+    [0x00cd, [3]], [0x0039, [1]], [0x0048, [2]], [0x004b, [1]],
+    [0x0059, [1]], [0x0018, [1]], [0x0058, [2]], [0x0217, [4]],
+  ]));
+  for (const name of ['swingVerticalAngle', 'anionMode', 'jetCool', 'outSilent',
+    'selfClean', 'activeClean', 'rateSelect5Level', 'freshAir', 'cascade',
+    'breezeless', 'breezeAwayDirection', 'filterReminder', 'filterCleanReminder']) {
+    assert.equal(caps.getSupport(name), 'supported', name);
+  }
+  assert.equal(caps.getSupport('swingHorizontalAngle'), 'unsupported');
+  assert.equal(caps.getSupport('rateSelect2Level'), 'unsupported');
+  for (const name of ['followMe', 'defrostSensor', 'outdoorFanSpeedSensor']) {
+    assert.equal(caps.getSupport(name), 'unknown', name);
+  }
+});
+
+test('iECO generation bytes distinguish cooling, heating and ECOMaster', () => {
+  for (const [bytes, cool, heat, number] of [
+    [[1], true, false, undefined], [[4], false, true, undefined],
+    [[3], true, true, undefined], [[0, 1], true, false, 3],
+    [[0, 3], false, true, 3], [[0, 8], true, true, 8],
+    [[0, 0], false, false, 1],
+  ]) {
+    const caps = new GetCapabilitiesResponse(page([[0x00e3, bytes]]));
+    assert.equal(caps.iEcoCool, cool);
+    assert.equal(caps.iEcoHeat, heat);
+    assert.equal(caps.getSupport('iEcoMode'), cool || heat ? 'supported' : 'unsupported');
+    assert.equal(caps.getReportedValue('iEcoNumber'), number);
+    assert.equal(caps.getSupport('ecoMode'), 'unknown');
+  }
+  const unknown = new GetCapabilitiesResponse(page([[0x00e3, [99]]]));
+  assert.equal(unknown.getSupport('iEcoMode'), 'unknown');
+});
+
+test('energy format variants include BCD and binary without guessing values', () => {
+  for (const [value, supported, setting, bcd] of [
+    [0, false, false, false], [1, false, false, false],
+    [2, true, false, true], [3, true, true, true],
+    [4, true, false, false], [5, true, true, false],
+  ]) {
+    const caps = new GetCapabilitiesResponse(page([[0x0216, [value]]]));
+    assert.equal(caps.energyStats, supported);
+    assert.equal(caps.powerCal, supported);
+    assert.equal(caps.energySetting, setting);
+    assert.equal(caps.energyBcd, bcd);
+  }
+});
+
+test('fixed angle support is independent of swing; zero-length is unknown', () => {
+  const caps = new GetCapabilitiesResponse(page([[0x0215, [1]], [0x0009, [0]], [0x0067, []]]));
+  assert.equal(caps.getSupport('updownFan'), 'supported');
+  assert.equal(caps.getSupport('swingVerticalAngle'), 'unsupported');
+  assert.equal(caps.getSupport('jetCool'), 'unknown');
+});
+
+test('custom fan control and newer HVAC combinations are recognized', () => {
+  const custom = new GetCapabilitiesResponse(page([[0x0210, [1]], [0x0214, [9]]]));
+  for (const name of ['fanSpeedControl', 'fanCustom', 'fanLow', 'fanMedium',
+    'fanHigh', 'fanSilent', 'fanAuto', 'auxHeatMode', 'auxMode', 'heatMode', 'coolMode']) {
+    assert.equal(custom.getSupport(name), 'supported', name);
+  }
+  const fixed = new GetCapabilitiesResponse(page([[0x0210, [3]]]));
+  assert.equal(fixed.getSupport('fanLow'), 'supported');
+  assert.equal(fixed.getSupport('fanMedium'), 'unsupported');
+  assert.equal(fixed.getSupport('fanCustom'), 'unsupported');
+});
+
+test('extended support survives serialization and summary includes unknowns', () => {
+  const c = new GetCapabilitiesResponse(page([[0x00e3, [0, 8]], [0x021e, [0]]]));
+  const restored = DeviceCapabilities.fromSnapshot(JSON.parse(JSON.stringify(c.toSnapshot())));
+  assert.equal(restored.getSupport('iEcoHeat'), 'supported');
+  assert.equal(restored.getSupport('anionMode'), 'unsupported');
+  const summary = restored.getSupportSummary();
+  assert.equal(summary.followMe, 'unknown');
+  assert.equal(summary.iEcoMode, 'supported');
+  assert.equal(summary.anionMode, 'unsupported');
+});

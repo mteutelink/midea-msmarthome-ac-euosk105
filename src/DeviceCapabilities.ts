@@ -2,8 +2,8 @@
 
 export type CapabilitySupport = 'supported' | 'unsupported' | 'unknown';
 
-export const BOOLEAN_CAPABILITIES = ["activeClean","autoMode","autoSetHumidity","breezeControl","buzzer","coolMode","decimals","downNoWindFeel","dryMode","ecoMode","electricAuxHeating","fanSpeedControl","frostProtectionMode","heatMode","indoorHumidity","leftrightFan","lightControl","manualSetHumidity","nestCheck","nestNeedChange","oneKeyNoWindOnMe","powerCal","powerCalSetting","silkyCool","smartEye","specialEco","turboCool","turboHeat","unitChangeable","updownFan","upNoWindFeel","windOffMe","windOnMe"] as const;
-export const NUMERIC_CAPABILITIES = ["maxTempAuto","maxTempCool","maxTempHeat","minTempAuto","minTempCool","minTempHeat"] as const;
+export const BOOLEAN_CAPABILITIES = ["activeClean","autoMode","autoSetHumidity","breezeControl","buzzer","coolMode","decimals","downNoWindFeel","dryMode","ecoMode","electricAuxHeating","fanSpeedControl","frostProtectionMode","heatMode","indoorHumidity","leftrightFan","lightControl","manualSetHumidity","nestCheck","nestNeedChange","oneKeyNoWindOnMe","powerCal","powerCalSetting","silkyCool","smartEye","specialEco","turboCool","turboHeat","unitChangeable","updownFan","upNoWindFeel","windOffMe","windOnMe","iEcoMode","iEcoCool","iEcoHeat","anionMode","jetCool","outSilent","followMe","selfClean","swingVerticalAngle","swingHorizontalAngle","defrostSensor","outdoorFanSpeedSensor","fanSilent","fanLow","fanMedium","fanHigh","fanAuto","fanCustom","energyStats","energySetting","energyBcd","filterReminder","filterCleanReminder","rateSelect2Level","rateSelect5Level","freshAir","cascade","breezeless","breezeAwayDirection","auxFanSpeedControl","auxHeatFanSpeedControl","auxHeatMode","auxMode"] as const;
+export const NUMERIC_CAPABILITIES = ["maxTempAuto","maxTempCool","maxTempHeat","minTempAuto","minTempCool","minTempHeat","iEcoNumber"] as const;
 export type BooleanCapability = typeof BOOLEAN_CAPABILITIES[number];
 export type NumericCapability = typeof NUMERIC_CAPABILITIES[number];
 export type CapabilityName = BooleanCapability | NumericCapability;
@@ -24,6 +24,248 @@ export interface CapabilitySnapshot {
 export class DeviceCapabilities {
     private _reported: Partial<Record<CapabilityName, boolean | number>> = {};
     private _rawCapabilities: RawCapability[] = [];
+
+    private _iEcoMode: boolean = false;
+    public get iEcoMode(): boolean { return this._iEcoMode; }
+    public set iEcoMode(value: boolean) {
+        this._iEcoMode = value;
+        this._reported.iEcoMode = value;
+    }
+
+    private _iEcoCool: boolean = false;
+    public get iEcoCool(): boolean { return this._iEcoCool; }
+    public set iEcoCool(value: boolean) {
+        this._iEcoCool = value;
+        this._reported.iEcoCool = value;
+    }
+
+    private _iEcoHeat: boolean = false;
+    public get iEcoHeat(): boolean { return this._iEcoHeat; }
+    public set iEcoHeat(value: boolean) {
+        this._iEcoHeat = value;
+        this._reported.iEcoHeat = value;
+    }
+
+    private _anionMode: boolean = false;
+    public get anionMode(): boolean { return this._anionMode; }
+    public set anionMode(value: boolean) {
+        this._anionMode = value;
+        this._reported.anionMode = value;
+    }
+
+    private _jetCool: boolean = false;
+    public get jetCool(): boolean { return this._jetCool; }
+    public set jetCool(value: boolean) {
+        this._jetCool = value;
+        this._reported.jetCool = value;
+    }
+
+    private _outSilent: boolean = false;
+    public get outSilent(): boolean { return this._outSilent; }
+    public set outSilent(value: boolean) {
+        this._outSilent = value;
+        this._reported.outSilent = value;
+    }
+
+    private _followMe: boolean = false;
+    public get followMe(): boolean { return this._followMe; }
+    public set followMe(value: boolean) {
+        this._followMe = value;
+        this._reported.followMe = value;
+    }
+
+    private _selfClean: boolean = false;
+    public get selfClean(): boolean { return this._selfClean; }
+    public set selfClean(value: boolean) {
+        this._selfClean = value;
+        this._reported.selfClean = value;
+    }
+
+    private _swingVerticalAngle: boolean = false;
+    public get swingVerticalAngle(): boolean { return this._swingVerticalAngle; }
+    public set swingVerticalAngle(value: boolean) {
+        this._swingVerticalAngle = value;
+        this._reported.swingVerticalAngle = value;
+    }
+
+    private _swingHorizontalAngle: boolean = false;
+    public get swingHorizontalAngle(): boolean { return this._swingHorizontalAngle; }
+    public set swingHorizontalAngle(value: boolean) {
+        this._swingHorizontalAngle = value;
+        this._reported.swingHorizontalAngle = value;
+    }
+
+    private _defrostSensor: boolean = false;
+    public get defrostSensor(): boolean { return this._defrostSensor; }
+    public set defrostSensor(value: boolean) {
+        this._defrostSensor = value;
+        this._reported.defrostSensor = value;
+    }
+
+    private _outdoorFanSpeedSensor: boolean = false;
+    public get outdoorFanSpeedSensor(): boolean { return this._outdoorFanSpeedSensor; }
+    public set outdoorFanSpeedSensor(value: boolean) {
+        this._outdoorFanSpeedSensor = value;
+        this._reported.outdoorFanSpeedSensor = value;
+    }
+
+    private _fanSilent: boolean = false;
+    public get fanSilent(): boolean { return this._fanSilent; }
+    public set fanSilent(value: boolean) {
+        this._fanSilent = value;
+        this._reported.fanSilent = value;
+    }
+
+    private _fanLow: boolean = false;
+    public get fanLow(): boolean { return this._fanLow; }
+    public set fanLow(value: boolean) {
+        this._fanLow = value;
+        this._reported.fanLow = value;
+    }
+
+    private _fanMedium: boolean = false;
+    public get fanMedium(): boolean { return this._fanMedium; }
+    public set fanMedium(value: boolean) {
+        this._fanMedium = value;
+        this._reported.fanMedium = value;
+    }
+
+    private _fanHigh: boolean = false;
+    public get fanHigh(): boolean { return this._fanHigh; }
+    public set fanHigh(value: boolean) {
+        this._fanHigh = value;
+        this._reported.fanHigh = value;
+    }
+
+    private _fanAuto: boolean = false;
+    public get fanAuto(): boolean { return this._fanAuto; }
+    public set fanAuto(value: boolean) {
+        this._fanAuto = value;
+        this._reported.fanAuto = value;
+    }
+
+    private _fanCustom: boolean = false;
+    public get fanCustom(): boolean { return this._fanCustom; }
+    public set fanCustom(value: boolean) {
+        this._fanCustom = value;
+        this._reported.fanCustom = value;
+    }
+
+    private _energyStats: boolean = false;
+    public get energyStats(): boolean { return this._energyStats; }
+    public set energyStats(value: boolean) {
+        this._energyStats = value;
+        this._reported.energyStats = value;
+    }
+
+    private _energySetting: boolean = false;
+    public get energySetting(): boolean { return this._energySetting; }
+    public set energySetting(value: boolean) {
+        this._energySetting = value;
+        this._reported.energySetting = value;
+    }
+
+    private _energyBcd: boolean = false;
+    public get energyBcd(): boolean { return this._energyBcd; }
+    public set energyBcd(value: boolean) {
+        this._energyBcd = value;
+        this._reported.energyBcd = value;
+    }
+
+    private _filterReminder: boolean = false;
+    public get filterReminder(): boolean { return this._filterReminder; }
+    public set filterReminder(value: boolean) {
+        this._filterReminder = value;
+        this._reported.filterReminder = value;
+    }
+
+    private _filterCleanReminder: boolean = false;
+    public get filterCleanReminder(): boolean { return this._filterCleanReminder; }
+    public set filterCleanReminder(value: boolean) {
+        this._filterCleanReminder = value;
+        this._reported.filterCleanReminder = value;
+    }
+
+    private _rateSelect2Level: boolean = false;
+    public get rateSelect2Level(): boolean { return this._rateSelect2Level; }
+    public set rateSelect2Level(value: boolean) {
+        this._rateSelect2Level = value;
+        this._reported.rateSelect2Level = value;
+    }
+
+    private _rateSelect5Level: boolean = false;
+    public get rateSelect5Level(): boolean { return this._rateSelect5Level; }
+    public set rateSelect5Level(value: boolean) {
+        this._rateSelect5Level = value;
+        this._reported.rateSelect5Level = value;
+    }
+
+    private _freshAir: boolean = false;
+    public get freshAir(): boolean { return this._freshAir; }
+    public set freshAir(value: boolean) {
+        this._freshAir = value;
+        this._reported.freshAir = value;
+    }
+
+    private _cascade: boolean = false;
+    public get cascade(): boolean { return this._cascade; }
+    public set cascade(value: boolean) {
+        this._cascade = value;
+        this._reported.cascade = value;
+    }
+
+    private _breezeless: boolean = false;
+    public get breezeless(): boolean { return this._breezeless; }
+    public set breezeless(value: boolean) {
+        this._breezeless = value;
+        this._reported.breezeless = value;
+    }
+
+    private _breezeAwayDirection: boolean = false;
+    public get breezeAwayDirection(): boolean { return this._breezeAwayDirection; }
+    public set breezeAwayDirection(value: boolean) {
+        this._breezeAwayDirection = value;
+        this._reported.breezeAwayDirection = value;
+    }
+
+    private _auxFanSpeedControl: boolean = false;
+    public get auxFanSpeedControl(): boolean { return this._auxFanSpeedControl; }
+    public set auxFanSpeedControl(value: boolean) {
+        this._auxFanSpeedControl = value;
+        this._reported.auxFanSpeedControl = value;
+    }
+
+    private _auxHeatFanSpeedControl: boolean = false;
+    public get auxHeatFanSpeedControl(): boolean { return this._auxHeatFanSpeedControl; }
+    public set auxHeatFanSpeedControl(value: boolean) {
+        this._auxHeatFanSpeedControl = value;
+        this._reported.auxHeatFanSpeedControl = value;
+    }
+
+    private _auxHeatMode: boolean = false;
+    public get auxHeatMode(): boolean { return this._auxHeatMode; }
+    public set auxHeatMode(value: boolean) {
+        this._auxHeatMode = value;
+        this._reported.auxHeatMode = value;
+    }
+
+    private _auxMode: boolean = false;
+    public get auxMode(): boolean { return this._auxMode; }
+    public set auxMode(value: boolean) {
+        this._auxMode = value;
+        this._reported.auxMode = value;
+    }
+
+    private _iEcoNumber: number = 0;
+    public get iEcoNumber(): number { return this._iEcoNumber; }
+    public set iEcoNumber(value: number) {
+        this._iEcoNumber = value;
+        this._reported.iEcoNumber = value;
+    }
+
+    public getSupportSummary(): Record<BooleanCapability, CapabilitySupport> {
+        return Object.fromEntries(BOOLEAN_CAPABILITIES.map(name => [name, this.getSupport(name)])) as Record<BooleanCapability, CapabilitySupport>;
+    }
 
     public getSupport(name: BooleanCapability): CapabilitySupport {
         const value = this._reported[name];

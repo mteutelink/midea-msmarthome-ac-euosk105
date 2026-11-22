@@ -1,3 +1,4 @@
+import { decodeExtendedCapability } from '../CapabilityDecoders';
 "use strict";
 
 import { DeviceCapabilities } from '../DeviceCapabilities';
@@ -307,7 +308,10 @@ export class GetCapabilitiesResponse extends DeviceCapabilities {
 				}
 			}
 
-			// Increment cursor and decrement getCapabilitiesResponse.to process
+			decodeExtendedCapability(getCapabilitiesResponse, id,
+                Array.from(data.subarray(i + 3, i + 3 + data[i + 2])));
+
+            // Increment cursor and decrement getCapabilitiesResponse.to process
 			i += (3 + data[i + 2]);
 			caps2process--;
 		}
