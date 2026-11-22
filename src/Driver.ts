@@ -40,9 +40,9 @@ export class Driver {
 						context.version = 3;
 						msg = msg.subarray(8, msg.length - 16);
 					} else
-					if (msg[0] === 0x5A || msg[1] === 0x5A) {
-						context.version = 2;
-					}
+						if (msg[0] === 0x5A || msg[1] === 0x5A) {
+							context.version = 2;
+						}
 
 					if (msg[0] === 0x5A && msg.length >= 104) {
 						const data = Security.aesDecrypt(msg.subarray(40, msg.length - 16));
@@ -56,19 +56,19 @@ export class Driver {
 						context.port = parseInt(data.subarray(4, 8).toString('hex').match(/../g)!.reverse().join(''), 16);
 						context.serial = data.subarray(8, 40).toString();
 						context.firmware = `${data[72 + data[40]]}.${data[73 + data[40]]}.${data[74 + data[40]]}`;
-						
+
 						if (context.version === 3) {
 							const hash = crypto.createHash('sha256').update(Buffer.from(_id, 'hex')).digest();
 							const b1 = hash.subarray(0, 16);
 							const b2 = hash.subarray(16);
 							const b3 = Buffer.alloc(16);
-						
+
 							for (let i = 0; i < b1.length; i++) {
 								b3[i] = b1[i] ^ b2[i];
 							}
-							context.udpId =  b3.toString('hex');
+							context.udpId = b3.toString('hex');
 						}
-						
+
 						if ((context.version === 3) && (context.applianceType === MIDEA_APPLIANCE_TYPE.AIRCONDITIONER)) {
 							_LOGGER.info("ADDING [" + util.inspect(context) + "]");
 							devices.push(new Device(context));
@@ -78,7 +78,7 @@ export class Driver {
 					} else {
 						_LOGGER.error("Message '" + msg.toString('hex') + "' not recognized");
 					}
-				} catch(error) {
+				} catch (error) {
 					_LOGGER.info("IGNORING BECAUSE OF ERROR [" + error + "]");
 					// SKIP
 				}
@@ -102,12 +102,53 @@ export class Driver {
 
 			let lanSecurityContext: LANSecurityContext = await Driver.retrieveTokenAndKeyFromCloud(device, cloudSecurityContext);
 			await device.authenticate(lanSecurityContext);
-			return device; 
-		} catch(error) {
+			return device;
+		} catch (error) {
 			throw new Error("Exception during device discovery [" + error + "]");
 		}
 	}
 
+	public static async retrieveTokenAndKeyFromCloud(device: Device, cloudSecurityContext: CloudSecurityContext | null): Promise<LANSecurityContext> {
+		// Behoud de bestaande standaard als geen context is meegegeven.
+		const context = cloudSecurityContext ?? new CloudSecurityContext(
+			NETHOMEPLUS_DEFAULT_ACCOUNT,
+			NETHOMEPLUS_DEFAULT_PASSWORD,
+			CONNECTION_TYPE.NETHOMEPLUS
+		);
+
+		// Respecteer de gekozen provider.
+		const connection = context.getCloudConnection(device);
+		const authenticated = await connection.authenticate(context);
+
+		let credential: string;
+
+		switch (authenticated.connectionType) {
+			case CONNECTION_TYPE.MSMARTHOME:
+				credential = authenticated.accessToken;
+				break;
+			case CONNECTION_TYPE.NETHOMEPLUS:
+				credential = authenticated.sessionId;
+				break;
+			default:
+				throw new Error("Unsupported cloud connection type");
+		}
+
+		if (!credential) {
+			throw new Error(
+				"Cloud login returned no access token or session ID"
+			);
+		}
+
+		const tokenAndKey = await connection._getTokenAndKey(
+			credential,
+			device.deviceContext.udpId
+		);
+
+		_LOGGER.debug("Driver::retrieveTokenAndKeyFromCloud(" + device.deviceContext.id + ",  ***) ==> token=" + tokenAndKey.token + ", key=" + tokenAndKey.key);
+		return new LANSecurityContext(tokenAndKey.token, tokenAndKey.key);
+	}
+
+	/*
 	public static async retrieveTokenAndKeyFromCloud(device: Device, cloudSecurityContext: CloudSecurityContext | null): Promise<LANSecurityContext> {
 		// MSMARTHOME HAS SHUT DOWN THE TOKEN API SERVICE: TOKENS AND KEYS SHOULD ALWAYS BE RETRIEVED VIA NETHOME PLUs
 		let updatedCloudSecurityContext: CloudSecurityContext = cloudSecurityContext;
@@ -126,4 +167,6 @@ export class Driver {
 
 		return new LANSecurityContext(tokenAndKey.token, tokenAndKey.key)
 	}
+*/
+
 }

@@ -8,7 +8,7 @@ export { LANConnection } from './LANConnection';
 export { CloudConnection } from './CloudConnection';
 export { Security } from './Security';
 export { LANSecurityContext } from './LANSecurityContext';
-export { CloudSecurityContext } from './CloudSecurityContext';
+export { CloudSecurityContext, CONNECTION_TYPE } from './CloudSecurityContext';
 export { Appliance } from './Appliance';
 export { HomeGroup } from './HomeGroup';
 export * from './command';

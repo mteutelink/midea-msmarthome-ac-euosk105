@@ -1,28 +1,29 @@
 "use strict";
 
+import { FRAME_TYPE } from "../MideaConstants";
 import { Device } from "../Device";
 import { _LOGGER } from '../Logger';
+import { GetPropertiesCommand, PROPERTY_ID } from "./GetPropertiesCommand";
 import { GetPropertiesResponse } from './GetPropertiesResponse';
 import { LANCommand } from './LANCommand';
 
-export enum PROPERTY_ID {
-	SWING_UD_ANGLE = 0x0009,
-	SWING_LR_ANGLE = 0x000A,
-	SELF_CLEAN = 0x0039,
-	BREEZELESS = 0x0018,
-	INDIRECT_WIND = 0x0042
-}
+export class SetPropertiesCommand extends LANCommand {
+	private readonly _propertyIDs: PROPERTY_ID[];
 
-export class GetPropertiesCommand extends LANCommand {
-	constructor(device: Device, propertyIDs: PROPERTY_ID[]) {
-		let _buffer: Buffer = Buffer.allocUnsafe(propertyIDs.length * 2);
-		propertyIDs.forEach((value, index) => _buffer.writeUInt16LE(value, index * 2));
-		super(device, Buffer.concat([Buffer.from([0xB1, propertyIDs.length]), _buffer]));
+	constructor(device: Device, properties: GetPropertiesResponse) {
+		super(device, Buffer.from([
+			0xB0, 0x04, 
+			0x0A, 0x00, 0x00, 0x50, 0x00,
+			0x09, 0x00, 0x00, 0x25, 0x00,
+			0x42, 0x00, 0x00, 0x00, 0x00,
+			0x39, 0x00, 0x00, 0x00, 0x00
+		]), FRAME_TYPE.SET);
+		this._propertyIDs = Array.from(properties.keys());
 	}
-
+	
 	public async execute(): Promise<GetPropertiesResponse> {
-		_LOGGER.debug("GetPropertiesCommand::execute()");
-		const response = await super.execute();
-		return new GetPropertiesResponse(response[0]);
+		_LOGGER.debug("SetPropertiesCommand::execute()");
+		await super.execute();
+		return new GetPropertiesCommand(this._device, this._propertyIDs).execute();
 	}
 }

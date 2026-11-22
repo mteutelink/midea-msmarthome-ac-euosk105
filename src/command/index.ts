@@ -6,6 +6,7 @@ export { GetCapabilitiesResponse } from './GetCapabilitiesResponse';
 export { GetPowerUsageCommand } from './GetPowerUsageCommand';
 export { GetPowerUsageResponse } from './GetPowerUsageResponse';
 export { GetPropertiesCommand, PROPERTY_ID } from './GetPropertiesCommand';
+export { SetPropertiesCommand } from './SetPropertiesCommand';
 export { GetPropertiesResponse } from './GetPropertiesResponse';
 export { GetStateCommand } from './GetStateCommand';
 export { GetStateResponse } from './GetStateResponse';
