@@ -20,11 +20,27 @@ export class GetCapabilitiesResponse extends DeviceCapabilities {
 
 	// PARSE
 	public parse(getCapabilitiesResponse: GetCapabilitiesResponse, data: Buffer): GetCapabilitiesResponse {
-		data = data.subarray(10, data.length - 2);
+
+        if (!Buffer.isBuffer(data) || data.length < 14) {
+            throw new Error('Truncated capabilities response');
+        }
+        data = data.subarray(10, data.length - 2);
+        if (data[0] !== 0xB5) throw new Error('Unexpected capabilities response type');
+
+        // Validate the entire TLV page before changing any existing capability.
+        let cursor = 2;
+        for (let count = 0; count < data[1]; count++) {
+            if (cursor + 3 > data.length) throw new Error('Truncated capability header');
+            const length = data[cursor + 2];
+            if (cursor + 3 + length > data.length) throw new Error('Truncated capability value');
+            cursor += 3 + length;
+        }
 
 		let i = 2;
 		let caps2process = data[1];
-		while (i < data.length - 2 && caps2process) {
+		while (caps2process) {
+            const id = data.readUInt16LE(i);
+            getCapabilitiesResponse.recordRawCapability(id, Array.from(data.subarray(i + 3, i + 3 + data[i + 2])));
 			if (data[i + 1] === 0x00 && data[i + 2] > 0) {
 				switch (data[i]) {
 					case 0x15: // hasIndoorHumidity
@@ -281,8 +297,6 @@ export class GetCapabilitiesResponse extends DeviceCapabilities {
 							// isHavePoint
 							if (data[i + 2] > 6) {
 								getCapabilitiesResponse.decimals = data[i + 9] !== 0;
-							} else {
-								getCapabilitiesResponse.decimals = data[i + 5] !== 0;
 							}
 						}
 						break;

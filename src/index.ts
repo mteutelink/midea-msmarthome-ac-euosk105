@@ -3,7 +3,7 @@ export { Driver } from './Driver';
 export { Device } from './Device';
 export { DeviceContext } from './DeviceContext';
 export { DeviceState } from './DeviceState';
-export { DeviceCapabilities } from './DeviceCapabilities';
+export { DeviceCapabilities, CapabilitySupport, BooleanCapability, NumericCapability, CapabilityName, CapabilitySnapshot, RawCapability } from './DeviceCapabilities';
 export { LANConnection } from './LANConnection';
 export { CloudConnection } from './CloudConnection';
 export { Security } from './Security';

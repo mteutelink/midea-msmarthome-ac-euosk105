@@ -1,6 +1,90 @@
 "use strict";
 
+export type CapabilitySupport = 'supported' | 'unsupported' | 'unknown';
+
+export const BOOLEAN_CAPABILITIES = ["activeClean","autoMode","autoSetHumidity","breezeControl","buzzer","coolMode","decimals","downNoWindFeel","dryMode","ecoMode","electricAuxHeating","fanSpeedControl","frostProtectionMode","heatMode","indoorHumidity","leftrightFan","lightControl","manualSetHumidity","nestCheck","nestNeedChange","oneKeyNoWindOnMe","powerCal","powerCalSetting","silkyCool","smartEye","specialEco","turboCool","turboHeat","unitChangeable","updownFan","upNoWindFeel","windOffMe","windOnMe"] as const;
+export const NUMERIC_CAPABILITIES = ["maxTempAuto","maxTempCool","maxTempHeat","minTempAuto","minTempCool","minTempHeat"] as const;
+export type BooleanCapability = typeof BOOLEAN_CAPABILITIES[number];
+export type NumericCapability = typeof NUMERIC_CAPABILITIES[number];
+export type CapabilityName = BooleanCapability | NumericCapability;
+
+export interface RawCapability {
+    /** Little-endian 16-bit capability identifier, rendered as four hex digits. */
+    id: string;
+    value: number[];
+}
+
+export interface CapabilitySnapshot {
+    version: 1;
+    /** Only values actually reported by the appliance; defaults are omitted. */
+    reported: Partial<Record<CapabilityName, boolean | number>>;
+    raw: RawCapability[];
+}
+
 export class DeviceCapabilities {
+    private _reported: Partial<Record<CapabilityName, boolean | number>> = {};
+    private _rawCapabilities: RawCapability[] = [];
+
+    public getSupport(name: BooleanCapability): CapabilitySupport {
+        const value = this._reported[name];
+        return value === true ? 'supported' : value === false ? 'unsupported' : 'unknown';
+    }
+
+    public getReportedValue(name: CapabilityName): boolean | number | undefined {
+        return this._reported[name];
+    }
+
+    public recordRawCapability(id: number, value: number[]): void {
+        const key = id.toString(16).padStart(4, '0');
+        const entry = { id: key, value: [...value] };
+        const index = this._rawCapabilities.findIndex(item => item.id === key);
+        if (index < 0) this._rawCapabilities.push(entry);
+        else this._rawCapabilities[index] = entry;
+    }
+
+    public toSnapshot(): CapabilitySnapshot {
+        return {
+            version: 1,
+            reported: { ...this._reported },
+            raw: this._rawCapabilities.map(item => ({ id: item.id, value: [...item.value] }))
+        };
+    }
+
+    public static fromSnapshot(snapshot: CapabilitySnapshot): DeviceCapabilities {
+        if (!snapshot || snapshot.version !== 1 || !snapshot.reported || !Array.isArray(snapshot.raw)) {
+            throw new Error('Invalid capability snapshot');
+        }
+        const result = new DeviceCapabilities();
+        for (const name of BOOLEAN_CAPABILITIES) {
+            const value = snapshot.reported[name];
+            if (typeof value === 'boolean') result[name] = value;
+        }
+        for (const name of NUMERIC_CAPABILITIES) {
+            const value = snapshot.reported[name];
+            if (typeof value === 'number' && Number.isFinite(value)) result[name] = value;
+        }
+        for (const entry of snapshot.raw) {
+            if (/^[0-9a-f]{4}$/i.test(entry.id) && Array.isArray(entry.value)
+                && entry.value.every(value => Number.isInteger(value) && value >= 0 && value <= 255)) {
+                result.recordRawCapability(parseInt(entry.id, 16), entry.value);
+            }
+        }
+        return result;
+    }
+
+    /** Missing fields in a partial response never erase previously reported values. */
+    public merge(update: DeviceCapabilities): DeviceCapabilities {
+        const current = this.toSnapshot();
+        const next = update.toSnapshot();
+        const raw = new Map(current.raw.map(item => [item.id, item]));
+        for (const item of next.raw) raw.set(item.id, item);
+        return DeviceCapabilities.fromSnapshot({
+            version: 1,
+            reported: { ...current.reported, ...next.reported },
+            raw: [...raw.values()]
+        });
+    }
+
 	private _activeClean: boolean = false;
 	private _autoMode: boolean = false;
 	private _autoSetHumidity: boolean = false;
@@ -46,6 +130,7 @@ export class DeviceCapabilities {
 	}
 	public set activeClean(value: boolean) {
 		this._activeClean = value;
+        this._reported.activeClean = value;
 	}
 
 	public get autoMode(): boolean {
@@ -53,6 +138,7 @@ export class DeviceCapabilities {
 	}
 	public set autoMode(value: boolean) {
 		this._autoMode = value;
+        this._reported.autoMode = value;
 	}
 	
 	public get autoSetHumidity(): boolean {
@@ -60,6 +146,7 @@ export class DeviceCapabilities {
 	}
 	public set autoSetHumidity(value: boolean) {
 		this._autoSetHumidity = value;
+        this._reported.autoSetHumidity = value;
 	}
 
 	public get breezeControl(): boolean {
@@ -67,6 +154,7 @@ export class DeviceCapabilities {
 	}
 	public set breezeControl(value: boolean) {
 		this._breezeControl = value;
+        this._reported.breezeControl = value;
 	}
 
 	public get buzzer(): boolean {
@@ -74,6 +162,7 @@ export class DeviceCapabilities {
 	}
 	public set buzzer(value: boolean) {
 		this._buzzer = value;
+        this._reported.buzzer = value;
 	}
 
 	public get coolMode(): boolean {
@@ -81,6 +170,7 @@ export class DeviceCapabilities {
 	}
 	public set coolMode(value: boolean) {
 		this._coolMode = value;
+        this._reported.coolMode = value;
 	}
 
 	public get decimals(): boolean {
@@ -88,6 +178,7 @@ export class DeviceCapabilities {
 	}
 	public set decimals(value: boolean) {
 		this._decimals = value;
+        this._reported.decimals = value;
 	}
 
 	public get downNoWindFeel(): boolean {
@@ -95,6 +186,7 @@ export class DeviceCapabilities {
 	}
 	public set downNoWindFeel(value: boolean) {
 		this._downNoWindFeel = value;
+        this._reported.downNoWindFeel = value;
 	}
 
 	public get dryMode(): boolean {
@@ -102,6 +194,7 @@ export class DeviceCapabilities {
 	}
 	public set dryMode(value: boolean) {
 		this._dryMode = value;
+        this._reported.dryMode = value;
 	}
 
 	public get ecoMode(): boolean {
@@ -109,6 +202,7 @@ export class DeviceCapabilities {
 	}
 	public set ecoMode(value: boolean) {
 		this._ecoMode = value;
+        this._reported.ecoMode = value;
 	}
 
 	public get electricAuxHeating(): boolean {
@@ -116,6 +210,7 @@ export class DeviceCapabilities {
 	}
 	public set electricAuxHeating(value: boolean) {
 		this._electricAuxHeating = value;
+        this._reported.electricAuxHeating = value;
 	}
 
 	public get fanSpeedControl(): boolean {
@@ -123,6 +218,7 @@ export class DeviceCapabilities {
 	}
 	public set fanSpeedControl(value: boolean) {
 		this._fanSpeedControl = value;
+        this._reported.fanSpeedControl = value;
 	}
 
 	public get frostProtectionMode(): boolean {
@@ -130,6 +226,7 @@ export class DeviceCapabilities {
 	}
 	public set frostProtectionMode(value: boolean) {
 		this._frostProtectionMode = value;
+        this._reported.frostProtectionMode = value;
 	}
 
 	public get heatMode(): boolean {
@@ -137,6 +234,7 @@ export class DeviceCapabilities {
 	}
 	public set heatMode(value: boolean) {
 		this._heatMode = value;
+        this._reported.heatMode = value;
 	}
 
 	public get indoorHumidity(): boolean {
@@ -144,6 +242,7 @@ export class DeviceCapabilities {
 	}
 	public set indoorHumidity(value: boolean) {
 		this._indoorHumidity = value;
+        this._reported.indoorHumidity = value;
 	}
 
 	public get leftrightFan(): boolean {
@@ -151,6 +250,7 @@ export class DeviceCapabilities {
 	}
 	public set leftrightFan(value: boolean) {
 		this._leftrightFan = value;
+        this._reported.leftrightFan = value;
 	}
 
 	public get lightControl(): boolean {
@@ -158,6 +258,7 @@ export class DeviceCapabilities {
 	}
 	public set lightControl(value: boolean) {
 		this._lightControl = value;
+        this._reported.lightControl = value;
 	}
 
 	public get manualSetHumidity(): boolean {
@@ -165,6 +266,7 @@ export class DeviceCapabilities {
 	}
 	public set manualSetHumidity(value: boolean) {
 		this._manualSetHumidity = value;
+        this._reported.manualSetHumidity = value;
 	}
 
 	public get maxTempAuto(): number {
@@ -172,6 +274,7 @@ export class DeviceCapabilities {
 	}
 	public set maxTempAuto(value: number) {
 		this._maxTempAuto = value;
+        this._reported.maxTempAuto = value;
 	}
 
 	public get maxTempCool(): number {
@@ -179,6 +282,7 @@ export class DeviceCapabilities {
 	}
 	public set maxTempCool(value: number) {
 		this._maxTempCool = value;
+        this._reported.maxTempCool = value;
 	}
 
 	public get maxTempHeat(): number {
@@ -186,6 +290,7 @@ export class DeviceCapabilities {
 	}
 	public set maxTempHeat(value: number) {
 		this._maxTempHeat = value;
+        this._reported.maxTempHeat = value;
 	}
 
 	public get minTempAuto(): number {
@@ -193,6 +298,7 @@ export class DeviceCapabilities {
 	}
 	public set minTempAuto(value: number) {
 		this._minTempAuto = value;
+        this._reported.minTempAuto = value;
 	}
 
 	public get minTempCool(): number {
@@ -200,6 +306,7 @@ export class DeviceCapabilities {
 	}
 	public set minTempCool(value: number) {
 		this._minTempCool = value;
+        this._reported.minTempCool = value;
 	}
 
 	public get minTempHeat(): number {
@@ -207,6 +314,7 @@ export class DeviceCapabilities {
 	}
 	public set minTempHeat(value: number) {
 		this._minTempHeat = value;
+        this._reported.minTempHeat = value;
 	}
 
 	public get nestCheck(): boolean {
@@ -214,6 +322,7 @@ export class DeviceCapabilities {
 	}
 	public set nestCheck(value: boolean) {
 		this._nestCheck = value;
+        this._reported.nestCheck = value;
 	}
 
 	public get nestNeedChange(): boolean {
@@ -221,6 +330,7 @@ export class DeviceCapabilities {
 	}
 	public set nestNeedChange(value: boolean) {
 		this._nestNeedChange = value;
+        this._reported.nestNeedChange = value;
 	}
 
 	public get oneKeyNoWindOnMe(): boolean {
@@ -228,6 +338,7 @@ export class DeviceCapabilities {
 	}
 	public set oneKeyNoWindOnMe(value: boolean) {
 		this._oneKeyNoWindOnMe = value;
+        this._reported.oneKeyNoWindOnMe = value;
 	}
 
 	public get powerCal(): boolean {
@@ -235,6 +346,7 @@ export class DeviceCapabilities {
 	}
 	public set powerCal(value: boolean) {
 		this._powerCal = value;
+        this._reported.powerCal = value;
 	}
 
 	public get powerCalSetting(): boolean {
@@ -242,6 +354,7 @@ export class DeviceCapabilities {
 	}
 	public set powerCalSetting(value: boolean) {
 		this._powerCalSetting = value;
+        this._reported.powerCalSetting = value;
 	}
 
 	public get silkyCool(): boolean {
@@ -249,6 +362,7 @@ export class DeviceCapabilities {
 	}
 	public set silkyCool(value: boolean) {
 		this._silkyCool = value;
+        this._reported.silkyCool = value;
 	}
 
 	public get smartEye(): boolean {
@@ -256,6 +370,7 @@ export class DeviceCapabilities {
 	}
 	public set smartEye(value: boolean) {
 		this._smartEye = value;
+        this._reported.smartEye = value;
 	}
 
 	public get specialEco(): boolean {
@@ -263,6 +378,7 @@ export class DeviceCapabilities {
 	}
 	public set specialEco(value: boolean) {
 		this._specialEco = value;
+        this._reported.specialEco = value;
 	}
 
 	public get turboCool(): boolean {
@@ -270,6 +386,7 @@ export class DeviceCapabilities {
 	}
 	public set turboCool(value: boolean) {
 		this._turboCool = value;
+        this._reported.turboCool = value;
 	}
 
 	public get turboHeat(): boolean {
@@ -277,6 +394,7 @@ export class DeviceCapabilities {
 	}
 	public set turboHeat(value: boolean) {
 		this._turboHeat = value;
+        this._reported.turboHeat = value;
 	}
 
 	public get unitChangeable(): boolean {
@@ -284,6 +402,7 @@ export class DeviceCapabilities {
 	}
 	public set unitChangeable(value: boolean) {
 		this._unitChangeable = value;
+        this._reported.unitChangeable = value;
 	}
 
 	public get updownFan(): boolean {
@@ -291,6 +410,7 @@ export class DeviceCapabilities {
 	}
 	public set updownFan(value: boolean) {
 		this._updownFan = value;
+        this._reported.updownFan = value;
 	}
 
 	public get upNoWindFeel(): boolean {
@@ -298,6 +418,7 @@ export class DeviceCapabilities {
 	}
 	public set upNoWindFeel(value: boolean) {
 		this._upNoWindFeel = value;
+        this._reported.upNoWindFeel = value;
 	}
 
 	public get windOffMe(): boolean {
@@ -305,6 +426,7 @@ export class DeviceCapabilities {
 	}
 	public set windOffMe(value: boolean) {
 		this._windOffMe = value;
+        this._reported.windOffMe = value;
 	}
 
 	public get windOnMe(): boolean {
@@ -312,5 +434,6 @@ export class DeviceCapabilities {
 	}
 	public set windOnMe(value: boolean) {
 		this._windOnMe = value;
+        this._reported.windOnMe = value;
 	}
 }
