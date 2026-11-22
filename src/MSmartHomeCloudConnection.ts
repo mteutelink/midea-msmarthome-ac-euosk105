@@ -167,15 +167,19 @@ export class MSmartHomeCloudConnection extends CloudConnection {
 
 		try {
 			const response = await this._executeRequest("/v1/iot/secure/getToken", accessToken, this._createRequest({
-				udpid: udpId
+				udpid: udpId,
+				applianceCodes: this._device.deviceContext.id.toString()
 			}));
 
 			_LOGGER.http("CloudConnection::_getTokenAndKey()::response = " + JSON.stringify(response));
 
-            if (response.code > 0) {
-                _LOGGER.error("Error in MSmartHomeCloudConnection::_getTokenAndKey() - " + response.code + ": " + response.message);
-                throw new Error("Error in MSmartHomeCloudConnection::_getTokenAndKey() - " + response.code + ": " + response.message);
-            }
+			const code = response.code ?? response.errorCode;
+			if (code !== undefined && Number(code) !== 0) {
+				const message = response.msg ?? response.message ?? "Unknown error";
+				const error = `MSmartHomeCloudConnection::_getTokenAndKey() - ${code}: ${message}`;
+				_LOGGER.error(error);
+				throw new Error(error);
+			}
 
 			const tokenPair = response.data.tokenlist.find((pair: { udpId: string; token: string; key: string; }) => pair.udpId === udpId);
 			if (!tokenPair) {
