@@ -1,29 +1,28 @@
-"use strict";
-
-import { FRAME_TYPE } from "../MideaConstants";
-import { Device } from "../Device";
-import { _LOGGER } from '../Logger';
-import { GetPropertiesCommand, PROPERTY_ID } from "./GetPropertiesCommand";
+import { Device } from '../Device';
+import { DeviceCapabilities } from '../DeviceCapabilities';
+import { FRAME_TYPE } from '../MideaConstants';
+import { GetPropertiesCommand } from './GetPropertiesCommand';
 import { GetPropertiesResponse } from './GetPropertiesResponse';
 import { LANCommand } from './LANCommand';
+import { PROPERTY_ID, PropertyValue, createSetPropertiesPayload } from './PropertyCodec';
 
 export class SetPropertiesCommand extends LANCommand {
-	private readonly _propertyIDs: PROPERTY_ID[];
-
-	constructor(device: Device, properties: GetPropertiesResponse) {
-		super(device, Buffer.from([
-			0xB0, 0x04, 
-			0x0A, 0x00, 0x00, 0x50, 0x00,
-			0x09, 0x00, 0x00, 0x25, 0x00,
-			0x42, 0x00, 0x00, 0x00, 0x00,
-			0x39, 0x00, 0x00, 0x00, 0x00
-		]), FRAME_TYPE.SET);
-		this._propertyIDs = Array.from(properties.keys());
-	}
-	
-	public async execute(): Promise<GetPropertiesResponse> {
-		_LOGGER.debug("SetPropertiesCommand::execute()");
-		await super.execute();
-		return new GetPropertiesCommand(this._device, this._propertyIDs).execute();
-	}
+    private readonly _propertyIDs: PROPERTY_ID[];
+    constructor(device: Device, properties: ReadonlyMap<PROPERTY_ID, PropertyValue>,
+        private readonly capabilities?: DeviceCapabilities) {
+        super(device, createSetPropertiesPayload(properties, capabilities), FRAME_TYPE.SET);
+        this._propertyIDs = Array.from(properties.keys());
+    }
+    public async execute(): Promise<GetPropertiesResponse> {
+        const response = await super.execute();
+        // Inspect the acknowledgement, and never claim success for a rejected write.
+        const ack = new GetPropertiesResponse(response[0]);
+        if (ack.errors.size) throw new Error('Air conditioner rejected properties: ' + [...ack.errors.keys()].join(', '));
+        const readable = this._propertyIDs.filter(id => id !== PROPERTY_ID.BUZZER);
+        if (!readable.length) return ack;
+        const state = await new GetPropertiesCommand(this._device, readable, this.capabilities).execute();
+        if (state.errors.size) throw new Error('Property read-back failed: ' + [...state.errors.keys()].join(', '));
+        if (readable.some(id => !state.has(id))) throw new Error('Property read-back returned no state');
+        return state; // Actual returned state; do not substitute requested values.
+    }
 }

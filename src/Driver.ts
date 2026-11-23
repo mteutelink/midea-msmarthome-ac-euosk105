@@ -14,81 +14,66 @@ import util from 'util';
 import { NETHOMEPLUS_DEFAULT_ACCOUNT, NETHOMEPLUS_DEFAULT_PASSWORD } from './NetHomePlusConstants';
 
 export class Driver {
-	public static async listDevices(): Promise<Device[]> {
-		_LOGGER.debug("Driver::listDevices()");
+    /** Decode one discovery datagram without contacting the device or cloud. */
+    public static parseDiscoveryResponse(message: Buffer, host: string): DeviceContext {
+        let msg = message;
+        const context = new DeviceContext();
+        if (msg.length >= 2 && msg[0] === 0x83 && msg[1] === 0x70) {
+            if (msg.length < 24) throw new Error('Truncated v3 discovery response');
+            context.version = 3; msg = msg.subarray(8, -16);
+        } else if (msg[0] === 0x5A && msg[1] === 0x5A) context.version = 2;
+        else throw new Error('Unknown discovery header');
+        if (msg.length < 72 || msg[0] !== 0x5A || msg[1] !== 0x5A) throw new Error('Invalid discovery packet');
+        const data = Security.aesDecrypt(msg.subarray(40, -16));
+        if (data.length < 41) throw new Error('Truncated discovery payload');
+        const ssidLength = data[40];
+        if (data.length < 69 + ssidLength) throw new Error('Truncated discovery fields');
+        const id = msg.subarray(20,26);
+        context.id = id.readUIntLE(0,6);
+        context.applianceType = data[55 + ssidLength];
+        context.ssid = data.subarray(41,41+ssidLength).toString();
+        context.macAddress = [...data.subarray(63+ssidLength,69+ssidLength)]
+            .map(byte => byte.toString(16).padStart(2,'0')).join(':');
+        context.host = host; context.port = data.readUInt32LE(4);
+        if (!context.port || context.port > 65535) throw new Error('Invalid discovery port');
+        context.serial = data.subarray(8,40).toString();
+        if (data.length >= 75 + ssidLength) context.firmware = [...data.subarray(72+ssidLength,75+ssidLength)].join('.');
+        if (context.version === 3) {
+            const hash = crypto.createHash('sha256').update(Buffer.from(id).reverse()).digest();
+            context.udpId = Buffer.from(hash.subarray(0,16).map((value,index)=>value^hash[index+16])).toString('hex');
+        }
+        return context;
+    }
 
-		let devices: Device[] = [];
-		const client: udp.Socket = udp.createSocket('udp4')
-			.bind({}, () => {
-				client.setBroadcast(true);
-
-				client.send(MIDEA_DISCOVER_BROADCAST_MSG, 0, MIDEA_DISCOVER_BROADCAST_MSG.length, 6445, '255.255.255.255', error => {
-					if (error) {
-						_LOGGER.error(error);
-						client.close();
-					}
-				});
-			})
-			.on('message', async (msg, info) => {
-				try {
-					_LOGGER.debug("Broadcasting returns '" + msg.toString('hex') + "'");
-
-					let context = new DeviceContext();
-
-					// DETERMINE VERSION
-					if (msg[0] === 0x83 || msg[1] === 0x70) {
-						context.version = 3;
-						msg = msg.subarray(8, msg.length - 16);
-					} else
-						if (msg[0] === 0x5A || msg[1] === 0x5A) {
-							context.version = 2;
-						}
-
-					if (msg[0] === 0x5A && msg.length >= 104) {
-						const data = Security.aesDecrypt(msg.subarray(40, msg.length - 16));
-
-						context.applianceType = data[55 + data[40]];
-						const _id = msg.subarray(20, 26).toString('hex').match(/../g)!.reverse().join('');
-						context.id = parseInt(_id, 16);
-						context.ssid = data.subarray(41, 41 + data[40]).toString();
-						context.macAddress = `${data[63 + data[40]].toString(16)}:${data[64 + data[40]].toString(16)}:${data[65 + data[40]].toString(16)}:${data[66 + data[40]].toString(16)}:${data[67 + data[40]].toString(16)}:${data[68 + data[40]].toString(16)}`;
-						context.host = info.address;
-						context.port = parseInt(data.subarray(4, 8).toString('hex').match(/../g)!.reverse().join(''), 16);
-						context.serial = data.subarray(8, 40).toString();
-						context.firmware = `${data[72 + data[40]]}.${data[73 + data[40]]}.${data[74 + data[40]]}`;
-
-						if (context.version === 3) {
-							const hash = crypto.createHash('sha256').update(Buffer.from(_id, 'hex')).digest();
-							const b1 = hash.subarray(0, 16);
-							const b2 = hash.subarray(16);
-							const b3 = Buffer.alloc(16);
-
-							for (let i = 0; i < b1.length; i++) {
-								b3[i] = b1[i] ^ b2[i];
-							}
-							context.udpId = b3.toString('hex');
-						}
-
-						if ((context.version === 3) && (context.applianceType === MIDEA_APPLIANCE_TYPE.AIRCONDITIONER)) {
-							_LOGGER.info("ADDING [" + util.inspect(context) + "]");
-							devices.push(new Device(context));
-						} else {
-							_LOGGER.info("IGNORING [" + util.inspect(context) + "]");
-						}
-					} else {
-						_LOGGER.error("Message '" + msg.toString('hex') + "' not recognized");
-					}
-				} catch (error) {
-					_LOGGER.info("IGNORING BECAUSE OF ERROR [" + error + "]");
-					// SKIP
-				}
-			});
-
-		return new Promise((resolve) => setTimeout(() => {
-			client.close();
-			resolve(devices);
-		}, 2000));
-	}
+    public static async listDevices(): Promise<Device[]> {
+        return new Promise((resolve, reject) => {
+            const devices = new Map<number,Device>();
+            const client = udp.createSocket('udp4');
+            let done = false;
+            const finish = (error?: Error) => {
+                if (done) return; done = true; clearTimeout(timer);
+                try { client.close(); } catch { /* Binding may have failed. */ }
+                if (error) reject(error); else resolve([...devices.values()]);
+            };
+            const timer = setTimeout(() => finish(),2000);
+            client.on('error',finish);
+            client.on('message',(msg,info)=>{
+                try {
+                    const context = Driver.parseDiscoveryResponse(msg,info.address);
+                    if (context.applianceType === MIDEA_APPLIANCE_TYPE.AIRCONDITIONER)
+                        devices.set(context.id,new Device(context));
+                } catch { /* Ignore unrelated or malformed UDP broadcasts. */ }
+            });
+            client.bind({},()=>{
+                try {
+                    client.setBroadcast(true);
+                    for (const port of [6445,20086]) client.send(MIDEA_DISCOVER_BROADCAST_MSG,port,'255.255.255.255',error=>{
+                        if (error) finish(error);
+                    });
+                } catch (error) { finish(error instanceof Error ? error : new Error(String(error))); }
+            });
+        });
+    }
 
 	public static async getDevice(id: number, cloudSecurityContext: CloudSecurityContext): Promise<Device> {
 		_LOGGER.debug("Driver::getDevice(" + id + ")");
@@ -99,6 +84,8 @@ export class Driver {
 				_LOGGER.error(`Device with id ${id} not found`);
 				throw new Error(`Device with id ${id} not found`);
 			}
+
+			if (device.deviceContext.version === 2) return device;
 
 			let lanSecurityContext: LANSecurityContext = await Driver.retrieveTokenAndKeyFromCloud(device, cloudSecurityContext);
 			await device.authenticate(lanSecurityContext);
@@ -144,29 +131,7 @@ export class Driver {
 			device.deviceContext.udpId
 		);
 
-		_LOGGER.debug("Driver::retrieveTokenAndKeyFromCloud(" + device.deviceContext.id + ",  ***) ==> token=" + tokenAndKey.token + ", key=" + tokenAndKey.key);
 		return new LANSecurityContext(tokenAndKey.token, tokenAndKey.key);
 	}
-
-	/*
-	public static async retrieveTokenAndKeyFromCloud(device: Device, cloudSecurityContext: CloudSecurityContext | null): Promise<LANSecurityContext> {
-		// MSMARTHOME HAS SHUT DOWN THE TOKEN API SERVICE: TOKENS AND KEYS SHOULD ALWAYS BE RETRIEVED VIA NETHOME PLUs
-		let updatedCloudSecurityContext: CloudSecurityContext = cloudSecurityContext;
-		if (!cloudSecurityContext || cloudSecurityContext.connectionType === CONNECTION_TYPE.MSMARTHOME) {
-			updatedCloudSecurityContext = new CloudSecurityContext(NETHOMEPLUS_DEFAULT_ACCOUNT, NETHOMEPLUS_DEFAULT_PASSWORD, CONNECTION_TYPE.NETHOMEPLUS)
-		}
-		let cloudConnection: CloudConnection = updatedCloudSecurityContext.getCloudConnection(device);
-
-		updatedCloudSecurityContext = await cloudConnection.authenticate(updatedCloudSecurityContext);
-
-		const tokenAndKey = await cloudConnection._getTokenAndKey(
-			updatedCloudSecurityContext.sessionId,
-			device.deviceContext.udpId
-		);
-		_LOGGER.debug("Driver::retrieveTokenAndKeyFromCloud(" + device.deviceContext.id + ",  ***) ==> token=" + tokenAndKey.token + ", key=" + tokenAndKey.key);
-
-		return new LANSecurityContext(tokenAndKey.token, tokenAndKey.key)
-	}
-*/
 
 }

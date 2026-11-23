@@ -5,7 +5,7 @@ import { NetHomePlusCloudConnection } from "./NetHomePlusCloudConnection";
 import { MSmartHomeCloudConnection } from "./MSmartHomeCloudConnection";
 import { Device } from "./Device";
 
-export const enum CONNECTION_TYPE {
+export enum CONNECTION_TYPE {
 	MSMARTHOME,
 	NETHOMEPLUS
 };

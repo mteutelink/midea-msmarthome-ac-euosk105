@@ -1,196 +1,143 @@
-"use strict";
-
 import { MIDEA_MESSAGE_TYPE } from './MideaConstants';
 import { Security } from './Security';
-import { LANSecurityContext } from "./LANSecurityContext";
-import { _LOGGER } from './Logger';
+import { LANSecurityContext } from './LANSecurityContext';
 import { Socket } from 'net';
 import { Device } from './Device';
+import { PacketStream } from './PacketStream';
+import crypto from 'crypto';
 
+export interface LANConnectionOptions {
+    connectTimeoutMs?: number;
+    requestTimeoutMs?: number;
+    socketFactory?: () => Socket;
+}
 export class LANConnection {
-	private readonly _device: Device;
-	private _socket: Socket | null;
-	private _requestCount: number = 0;
-	private _numberOfRetries: number = 0;
-	private readonly MAX_NUMBER_OF_RETRIES: number = 3;
-
-	constructor(device: Device) {
-		this._device = device;
-		this._socket = null;
-	}
-
-	private async _connect(): Promise<Socket> {
-		_LOGGER.debug("LANConnection::_connect()");
-		if (this._socket) {
-			return (this._socket);
-		}
-
-		this._disconnect();
-
-		_LOGGER.http(`Attempting new connection to ${this._device.deviceContext.host}:${this._device.deviceContext.port}`);
-		return new Promise((resolve, reject) => {
-			const socket = new Socket();
-			socket.setTimeout(30000);
-
-			socket.on('error', (error: Error) => {
-				_LOGGER.error(`Connect Error: ${this._device.deviceContext.host}:${this._device.deviceContext.port} ${error}`);
-				this._disconnect();
-				reject(error instanceof Error ? error : new Error(String(error)));
-			});
-
-			socket.connect(this._device.deviceContext.port, this._device.deviceContext.host, () => {
-				_LOGGER.http(`Connected to ${socket.localAddress}:${socket.localPort}`);
-				this._socket = socket;
-				resolve(this._socket);
-			});
-		});
-	}
-
-	private _disconnect() {
-		_LOGGER.debug("LANConnection::_disconnect()");
-		if (this._socket) {
-			this._socket.end();
-			this._socket = null;
-		}
-	}
-
-	private async _executeRequest(message: Buffer): Promise<Buffer> {
-		_LOGGER.debug("LANConnection::_executeRequest()");
-
-		return new Promise((resolve, reject) => {
-			return this._connect().then(socket => {
-
-				_LOGGER.http(`Sending message: ${message.toString('hex')}`);
-				socket.write(message, (error) => {
-					if (error) {
-						_LOGGER.error(`Send Error: ${error}`);
-						this._disconnect();
-						reject(error instanceof Error ? error : new Error(String(error)));
-					}
-
-					socket.once('data', (response: Buffer) => {
-						_LOGGER.http(`Received response: ${response.toString('hex')}`);
-						if (response.length === 0) {
-							_LOGGER.error(`Server Closed Socket`);
-							this._disconnect();
-							reject(new Error("Server closed the socket unexpectedly"));
-						}
-						resolve(response);
-					});
-
-					socket.once('timeout', () => {
-						_LOGGER.debug('Socket timed out');
-						this._disconnect();
-						resolve(Buffer.alloc(0));
-					});
-				});
-			}).catch((error) => {
-				_LOGGER.error(`Connection Error: ${error}`);
-				this._disconnect();
-				reject(error instanceof Error ? error : new Error(String(error)));
-			})
-		});
-	}
-
-
-	public async authenticate(lanSecurityContext: LANSecurityContext): Promise<LANSecurityContext> {
-		_LOGGER.debug("LANConnection::authenticate()");
-
-		return new Promise((resolve, reject) => {
-			const encoded = Security.encode8370(
-				lanSecurityContext,
-				Buffer.from(lanSecurityContext.token, 'hex'),
-				this._requestCount,
-				MIDEA_MESSAGE_TYPE.HANDSHAKE_REQUEST
-			);
-
-			this._requestCount = encoded.count;
-
-			return this._executeRequest(encoded.data).then((response: Buffer) => {
-				const tcpKeyData = response.slice(8, 72);
-				return Security.tcpKey(lanSecurityContext, tcpKeyData).then((updatedSecurityContext: LANSecurityContext) => {
-					_LOGGER.debug("LanConnection::authenticate() = " + JSON.stringify(updatedSecurityContext));
-					this._device.lanSecurityContext = updatedSecurityContext;
-					this._requestCount = 0;
-					resolve(updatedSecurityContext);
-				}).catch((error) => {
-					_LOGGER.error("Error during TCP key generation:", error);
-					this._disconnect();
-					reject(error instanceof Error ? error : new Error(String(error)));
-				});
-			}).catch((error) => {
-				_LOGGER.error("Error during authentication:", error);
-				this._disconnect();
-				reject(error instanceof Error ? error : new Error(String(error)));
-			});
-		});
-	}
-
-	public close(): void {
-		this._disconnect();
-	}
-
-	public async executeCommand(request: Buffer, messageType: MIDEA_MESSAGE_TYPE = MIDEA_MESSAGE_TYPE.ENCRYPTED_REQUEST): Promise<any> {
-		_LOGGER.debug("LanConnection::executeCommand()");
-		return new Promise((resolve, reject) => {
-			if (!this._device.lanSecurityContext) {
-				reject(new ReferenceError("Not authenticated exception"));
-			}
-
-			if (!this._socket) {
-				return this.authenticate(this._device.lanSecurityContext).then((updatedLanSecurityContext) => {
-					this._device.lanSecurityContext = updatedLanSecurityContext;
-					return this.executeCommand(request, messageType);
-				}).catch((error) => {
-					_LOGGER.error("Error during authentication:", error);
-					this._disconnect();
-					reject(error instanceof Error ? error : new Error(String(error)));
-				});
-			}
-
-			const encoded = Security.encode8370(
-				this._device.lanSecurityContext,
-				request,
-				this._requestCount,
-				messageType
-			);
-
-			this._requestCount = encoded.count;
-
-			return this._executeRequest(encoded.data).then((response: Buffer) => {
-				if (response.length === 0) {
-					_LOGGER.error(`Server Closed Socket`);
-					this._disconnect();
-					reject(new Error("Server closed the socket unexpectedly"));
-				} else if (response.length < 13 || response.subarray(8, 13).equals(Buffer.from("ERROR", 'utf8'))) {
-					if (++this._numberOfRetries <= this.MAX_NUMBER_OF_RETRIES) {
-						_LOGGER.debug("RETRYING [" + this._numberOfRetries + "]");
-						this._disconnect();
-						return this.executeCommand(request, messageType);
-					} else {
-						_LOGGER.error("Error occured during command execution; retried but nothing helps");
-						this._disconnect();
-						reject(new Error("Error occured during command execution"));
-					}
-				} else {
-					this._numberOfRetries = 0;
-					const decodedResponses: Buffer[] = Security.decode8370(this._device.lanSecurityContext, response);
-					const packets: Buffer[] = [];
-					decodedResponses.forEach(response => {
-						if (response.length > 40 + 16) {
-							response = Security.aesDecrypt(response.slice(40, -16));
-						}
-						if (response.length > 10) {
-							packets.push(response);
-						}
-					});
-					resolve(packets);
-				}
-			}).catch((error) => {
-				_LOGGER.error("Error during command execution:", error);
-				this._disconnect();
-				reject(error instanceof Error ? error : new Error(String(error)));
-			});
-		});
-	}
+    private socket: Socket | null = null;
+    private connecting: Socket | null = null;
+    private authenticated = false;
+    private requestCount = 0;
+    private queue: Promise<unknown> = Promise.resolve();
+    constructor(private readonly device: Device, private readonly options: LANConnectionOptions = {}) {}
+    private serial<T>(action: () => Promise<T>): Promise<T> {
+        const run = this.queue.then(action, action);
+        this.queue = run.then((): undefined => undefined, (): undefined => undefined);
+        return run;
+    }
+    private async connect(): Promise<Socket> {
+        if (this.socket && !this.socket.destroyed) return this.socket;
+        return new Promise((resolve, reject) => {
+            const socket = this.options.socketFactory?.() ?? new Socket();
+            this.connecting = socket;
+            let settled = false;
+            const timer = setTimeout(() => fail(new Error('LAN connect timed out')), this.options.connectTimeoutMs ?? 30000);
+            const fail = (error: Error) => {
+                if (!settled) { settled = true; clearTimeout(timer); if (this.connecting === socket) this.connecting = null; socket.destroy(); reject(error); }
+            };
+            // Keep an error listener for errors between requests as well.
+            socket.on('error', error => {
+                if (this.socket === socket) { this.socket = null; this.authenticated = false; }
+                fail(error);
+            });
+            socket.on('close', () => {
+                if (this.socket === socket) { this.socket = null; this.authenticated = false; }
+                fail(new Error('LAN connection closed'));
+            });
+            socket.connect(this.device.deviceContext.port, this.device.deviceContext.host, () => {
+                if (settled) return;
+                settled = true; clearTimeout(timer); this.connecting = null; this.socket = socket; resolve(socket);
+            });
+        });
+    }
+    private async request(message: Buffer): Promise<Buffer[]> {
+        const socket = await this.connect();
+        return new Promise((resolve, reject) => {
+            const stream = new PacketStream();
+            const packets: Buffer[] = [];
+            let settled = false;
+            const cleanup = () => {
+                clearTimeout(timer);
+                socket.removeListener('data', data);
+                socket.removeListener('error', fail);
+                socket.removeListener('end', closed);
+                socket.removeListener('close', closed);
+            };
+            const fail = (error: Error) => {
+                if (settled) return;
+                settled = true; cleanup(); this.close(); reject(error);
+            };
+            const closed = () => fail(new Error('LAN socket closed before a complete response'));
+            const data = (chunk: Buffer) => {
+                try {
+                    packets.push(...stream.push(chunk));
+                    if (packets.length && !stream.pendingBytes) {
+                        settled = true; cleanup(); resolve(packets);
+                    }
+                } catch (error) { fail(error instanceof Error ? error : new Error(String(error))); }
+            };
+            const timer = setTimeout(() => fail(new Error('LAN request timed out; command was not replayed')),
+                this.options.requestTimeoutMs ?? 30000);
+            // Install listeners before write: a fast device can reply before its callback.
+            socket.on('data', data); socket.once('error', fail);
+            socket.once('end', closed); socket.once('close', closed);
+            try { socket.write(message, error => { if (error) fail(error); }); }
+            catch (error) { fail(error instanceof Error ? error : new Error(String(error))); }
+        });
+    }
+    private async handshake(context: LANSecurityContext): Promise<LANSecurityContext> {
+        const encoded = Security.encode8370(context, Buffer.from(context.token, 'hex'),
+            this.requestCount, MIDEA_MESSAGE_TYPE.HANDSHAKE_REQUEST);
+        this.requestCount = encoded.count;
+        try {
+            const response = await this.request(encoded.data);
+            if (response.length !== 1 || (response[0][5] & 15) !== 1) throw new Error('Unexpected handshake response');
+            const decoded = Security.decode8370(context, response[0]);
+            await Security.tcpKey(context, decoded[0]);
+            this.device.lanSecurityContext = context;
+            this.authenticated = true; this.requestCount = 0;
+            return context;
+        } catch (error) { this.close(); throw error; }
+    }
+    public authenticate(context: LANSecurityContext): Promise<LANSecurityContext> {
+        return this.serial(() => this.handshake(context));
+    }
+    public close(): void {
+        const socket = this.socket;
+        this.socket = null; this.authenticated = false;
+        socket?.destroy();
+        this.connecting?.destroy();
+        this.connecting = null;
+    }
+    public executeCommand(request: Buffer,
+        type: MIDEA_MESSAGE_TYPE = MIDEA_MESSAGE_TYPE.ENCRYPTED_REQUEST): Promise<Buffer[]> {
+        return this.serial(async () => {
+            try {
+                const v2 = this.device.deviceContext.version === 2;
+                let wire = request;
+                const context = this.device.lanSecurityContext;
+                if (!v2) {
+                    if (!context) throw new ReferenceError('LAN credentials are missing');
+                    if (!this.authenticated || !this.socket) await this.handshake(context);
+                    const encoded = Security.encode8370(context, request, this.requestCount, type);
+                    this.requestCount = encoded.count; wire = encoded.data;
+                }
+                const response = await this.request(wire);
+                const packets = v2 ? response : response.flatMap(packet => Security.decode8370(context!, packet));
+                return packets.map(packet => {
+                    if (packet[0] === 0x5A && packet[1] === 0x5A) {
+                        if (packet.length < 72 || packet.readUInt16LE(4) !== packet.length)
+                            throw new Error('Invalid inner LAN packet length');
+                        const signed = packet.subarray(0, -16);
+                        if (!crypto.timingSafeEqual(Security.encode32(signed), packet.subarray(-16)))
+                            throw new Error('Inner LAN packet signature does not match');
+                        packet = Security.aesDecrypt(packet.subarray(40, -16));
+                    }
+                    if (packet.length < 13 || packet[2] !== 0xAC || packet[0] !== 0xAA || packet[1] + 1 !== packet.length)
+                        throw new Error('Invalid appliance response frame');
+                    if ((packet.subarray(1).reduce((sum, value) => sum + value, 0) & 255) !== 0)
+                        throw new Error('Appliance response checksum does not match');
+                    return packet;
+                });
+            } catch (error) { this.close(); throw error; }
+        });
+    }
 }

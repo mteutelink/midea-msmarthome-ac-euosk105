@@ -1,12 +1,13 @@
 "use strict";
 
+import { StateProtocolProfile } from '../DeviceState';
 import { Device } from "../Device";
 import { GetStateResponse } from './GetStateResponse';
 import { _LOGGER } from '../Logger';
 import { LANCommand } from './LANCommand';
 
 export class GetStateCommand extends LANCommand {
-	constructor(device: Device) {
+	constructor(device: Device, private readonly profile: StateProtocolProfile = 'standard') {
 		super(device, Buffer.from([
 				0x41, 0x81, 0x00, 0xFF, 0x03, 0xFF, 0x00,
 				0x02, //this.temperatureType,
@@ -20,6 +21,6 @@ export class GetStateCommand extends LANCommand {
 	public async execute(): Promise<GetStateResponse> {
 		_LOGGER.debug("GetStateCommand::execute()");
 		const response = await super.execute();
-		return new GetStateResponse(response[0]);
+		return new GetStateResponse(response[0], this.profile);
 	}
 }

@@ -3,7 +3,7 @@ export { Driver } from './Driver';
 export { Device } from './Device';
 export { DeviceContext } from './DeviceContext';
 export { DeviceState } from './DeviceState';
-export { DeviceCapabilities } from './DeviceCapabilities';
+export { DeviceCapabilities, CapabilitySupport, BooleanCapability, NumericCapability, CapabilityName, CapabilitySnapshot, RawCapability } from './DeviceCapabilities';
 export { LANConnection } from './LANConnection';
 export { CloudConnection } from './CloudConnection';
 export { Security } from './Security';
@@ -13,3 +13,9 @@ export { Appliance } from './Appliance';
 export { HomeGroup } from './HomeGroup';
 export * from './command';
 export { _LOGGER } from './Logger';
+export { LANConnectionOptions } from './LANConnection';
+export { PacketStream } from './PacketStream';
+
+export { StateProtocolProfile } from './DeviceState';
+
+export { OPERATIONAL_MODE, FAN_SPEED, SWING_MODE, SWING_ANGLE } from './DeviceState';

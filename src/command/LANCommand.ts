@@ -11,6 +11,7 @@ export abstract class LANCommand implements Command {
 	protected _device: Device;
 	private readonly _request: Buffer;
 	static _messageId: number = 0;
+    private static readonly queues = new WeakMap<Device, Promise<unknown>>();
 
 	private readonly CRC8_854_TABLE = [
 		0x00, 0x5E, 0xBC, 0xE2, 0x61, 0x3F, 0xDD, 0x83,
@@ -94,6 +95,7 @@ export abstract class LANCommand implements Command {
 
 	private _createCommand(data: Buffer, frameType: FRAME_TYPE = FRAME_TYPE.REQUEST): Buffer {
 		_LOGGER.debug("Command::_createCommand(" + data.toString('hex') + ")");
+		if (data.length > 242) throw new Error('Command exceeds the Midea frame limit');
 		// Create payload with message ID
 		const payload = Buffer.concat([data, Buffer.from([LANCommand._calculcateMessageId()])]);
 
@@ -155,7 +157,7 @@ export abstract class LANCommand implements Command {
 		packet.set(buffer, 20);
 
 		// ENCRYPT COMMAND
-		const encryptedCommand = Security.aesEncrypt(command).slice(0, 48);
+		const encryptedCommand = Security.aesEncrypt(command);
 		packet = Buffer.concat([packet, encryptedCommand]);
 
 		const length = Buffer.alloc(2);
@@ -171,6 +173,14 @@ export abstract class LANCommand implements Command {
 
 	public async execute(): Promise<any> {
 		_LOGGER.debug("Command::execute()");
-		return this._device.lanConnection.executeCommand(this._request);
+		const previous = LANCommand.queues.get(this._device) ?? Promise.resolve();
+        const run = previous.catch((): undefined => undefined).then(
+            () => this._device.lanConnection.executeCommand(this._request)
+        );
+        const tail = run.then((): undefined => undefined, (): undefined => undefined);
+        LANCommand.queues.set(this._device, tail);
+        return run.finally(() => {
+            if (LANCommand.queues.get(this._device) === tail) LANCommand.queues.delete(this._device);
+        });
 	}
 }

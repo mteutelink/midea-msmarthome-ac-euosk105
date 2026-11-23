@@ -1,6 +1,6 @@
 "use strict";
 
-export const enum MIDEA_APPLIANCE_TYPE {
+export enum MIDEA_APPLIANCE_TYPE {
 	DEHUMIDIFIER = 0xA1,
 	AIRCONDITIONER = 0xAC,
 	FAN = 0xFA,
@@ -20,7 +20,7 @@ export const MIDEA_DISCOVER_BROADCAST_MSG: Buffer = Buffer.from([
 	0x56, 0x9e, 0xb8, 0xec, 0x91, 0x8e, 0x92, 0xe5
 ]);
 
-export const enum MIDEA_MESSAGE_TYPE {
+export enum MIDEA_MESSAGE_TYPE {
 	HANDSHAKE_REQUEST = 0x0,
 	HANDSHAKE_RESPONSE = 0x1,
 	ENCRYPTED_RESPONSE = 0x3,
@@ -28,7 +28,7 @@ export const enum MIDEA_MESSAGE_TYPE {
 	TRANSPARENT = 0xf
 }
 
-export const enum FRAME_TYPE {
+export enum FRAME_TYPE {
 	UNKNOWN = 0,
 	SET = 0x02,
 	REQUEST = 0x03,
