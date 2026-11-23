@@ -1,8 +1,9 @@
-import { DeviceState, MIN_TARGET_TEMPERATURE } from '../DeviceState';
+import { DeviceState, MIN_TARGET_TEMPERATURE, StateProtocolProfile } from '../DeviceState';
 
 export class GetStateResponse extends DeviceState {
-    constructor(frame: Buffer) {
+    constructor(frame: Buffer, profile: StateProtocolProfile = 'standard') {
         super();
+        this.protocolProfile = profile;
         if (!Buffer.isBuffer(frame) || frame.length < 29) throw new Error('Truncated basic state response');
         const data = frame.subarray(10, frame.length - 2);
         if (data[0] !== 0xC0) throw new Error('Unexpected basic state response type');
@@ -17,9 +18,14 @@ export class GetStateResponse extends DeviceState {
         this.followMe = Boolean(data[8] & 0x80);
         this.anionMode = Boolean(data[9] & 0x20);
         this.auxHeat = Boolean(data[9] & 8);
-        this.independentAuxHeat = Boolean(data[8] & 0x40);
+        if (profile === 'msmartAuxHeat') this.independentAuxHeat = Boolean(data[8] & 0x40);
+        else this.smartEye = Boolean(data[8] & 0x40);
         this.filterAlert = Boolean(data[13] & 0x20);
-        this.displayOn = data[14] !== 0x70;
+        this.displayOn = (data[14] & 0x70) !== 0x70;
+        this.powerSaving = Boolean(data[8] & 8);
+        this.naturalWind = Boolean(data[9] & 2);
+        this.dryFunction = Boolean(data[9] & 4);
+        if (data.length >= 23) this.comfortMode = Boolean(data[22] & 1);
         const alternate = data[13] & 0x1F;
         this.targetTemperature = (alternate ? alternate + 12 : (data[2] & 15) + MIN_TARGET_TEMPERATURE)
             + ((data[2] & 0x10) ? 0.5 : 0);

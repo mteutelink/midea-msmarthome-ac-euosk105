@@ -19,10 +19,13 @@ No write was performed on a real air conditioner during development.
 | One-shot buzzer/beep | No reliable persistent state | BUZZER property or beepOn | Do not invent a readable boolean. |
 | Display | GetStateCommand | ToggleDisplayCommand | Toggle only, not an idempotent absolute setter. |
 | Indoor/outdoor temperature, filter alert, error code | GetStateCommand | No | Read-only measurements/status. |
-| Energy, current-run energy and power | GetPowerUsageCommand | No | kWh, kWh, W; explicit BCD/binary format. |
+| Energy, current-run energy and power | GetPowerUsageCommand | No | kWh, kWh, W; explicit BCD, binary, binary100, mixed or bcdEnergyBinaryPower format. |
 | Humidity, defrost, outdoor fan speed | GetSensorStateCommand | No | Group-5 telemetry; actual hardware availability varies. |
 | Humidity target | GetStateCommand | SetStateCommand | Only on hardware supporting humidity targets; 0..100 encoded. |
-| Filter reset, model-specific compressor telemetry, presets | Not implemented here | Not implemented here | Filter reminder support is not a filter-reset command. |
+| Compressor/electrical/coil/fan/pump/run-hour telemetry | GetTelemetryCommand | No | Explicit model-dependent groups 0/1/2/3/5/7/11. |
+| Power saving, natural wind, dry function, comfort mode | GetStateCommand | SetStateCommand | Standard C0/0x40 profile. |
+| Filter reset | Filter alert only | SetStateCommand resetFilter option | Explicit service action, standard profile only. |
+| BB subprotocol, alternate model status frames and advanced presets | Incomplete | Incomplete | See SOURCE_AUDIT.md for the remaining gaps. |
 
 ## Read all available states
 
@@ -72,3 +75,7 @@ validate counters and units on each appliance before relying on them.
 
 Reference: https://github.com/mill1000/midea-msmart/blob/master/msmart/device/AC/command.py
 (PropertyId, state/property/group decoders and query/control payloads).
+
+## Model profiles and audit
+
+See [SOURCE_AUDIT.md](SOURCE_AUDIT.md) for pinned Python/Homey references, tests and remaining gaps. The default state profile is standard. msmartAuxHeat explicitly selects the conflicting independent-auxiliary-heat bits; it cannot be combined with standard filter reset. Telemetry groups and energy formats are selected explicitly. This preview does not implement BB/model-specific alternate status protocols.

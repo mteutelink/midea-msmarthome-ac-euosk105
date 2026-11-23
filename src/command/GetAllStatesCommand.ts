@@ -1,3 +1,5 @@
+import { GetTelemetryCommand, TelemetryGroup } from './GetTelemetryCommand';
+import { StateProtocolProfile } from '../DeviceState';
 import { Device } from '../Device';
 import { DeviceCapabilities } from '../DeviceCapabilities';
 import { GetStateCommand } from './GetStateCommand';
@@ -11,7 +13,10 @@ import { GetSensorStateCommand } from './GetSensorStateCommand';
 export interface AllStatesOptions {
     /** Explicit opt-in to read optional functions not advertised in B5. Never writes. */
     probeUnknown?: boolean;
+    stateProfile?: StateProtocolProfile;
     energyFormat?: EnergyDecodeMode;
+    /** Explicitly requested diagnostic groups; failures are reported per group. */
+    telemetryGroups?: TelemetryGroup[];
 }
 export interface AllStatesSnapshot {
     values: Record<string, boolean | number | PropertyValue | null>;
@@ -35,7 +40,7 @@ export class GetAllStatesCommand {
         const values: AllStatesSnapshot['values'] = {};
         const errors: Record<string, string> = {};
         const message = (error: unknown) => error instanceof Error ? error.message : String(error);
-        try { Object.assign(values, (await new GetStateCommand(this.device).execute()).toStateSnapshot()); }
+        try { Object.assign(values, (await new GetStateCommand(this.device, this.options.stateProfile).execute()).toStateSnapshot()); }
         catch (error) { errors.basic = message(error); }
         if (!this.capabilities) {
             try { this.capabilities = await new GetCapabilitiesCommand(this.device).execute(); }
@@ -74,6 +79,13 @@ export class GetAllStatesCommand {
                 values.humidity = result.humidity; values.defrost = result.defrost;
                 values.outdoorFanSpeed = result.outdoorFanSpeed;
             } catch (error) { errors.sensors = message(error); }
+        }
+        for (const group of new Set(this.options.telemetryGroups ?? [])) {
+            try {
+                const result = await new GetTelemetryCommand(this.device, group).execute();
+                // Keep telemetry names separate: group 11 must not overwrite property angle conventions.
+                for (const [name, value] of Object.entries(result.values)) values['telemetry.' + name] = value;
+            } catch (error) { errors['telemetry.' + group] = message(error); }
         }
         return { values, errors };
     }

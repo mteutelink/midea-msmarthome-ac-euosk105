@@ -1,0 +1,685 @@
+{
+  "date": "2026-11-23",
+  "scope": "Selected AC protocol/integration sources; not all public code or forks",
+  "sources": [
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/base_device.py",
+      "sha": "62a1b4f9b3cee42099167c335e4d8559bbae5160",
+      "bytes": 8146,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/const.py",
+      "sha": "8d41b64267c273fa6cccddb10cfef562ddbe0a43",
+      "bytes": 1148,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/cloud.py",
+      "sha": "3bec5332f6846c95d07578dfcb255dadbacea9a0",
+      "bytes": 20196,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/crc8.py",
+      "sha": "5cc5eb684d363abf9447ea30f304c414271fec69",
+      "bytes": 1881,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/utils.py",
+      "sha": "f6f14d3bf97de2df2ac90d8edac0d44df5aaee39",
+      "bytes": 2934,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "nbogojevic/midea-beautiful-air",
+      "path": "midea_beautiful/crypto.py",
+      "sha": "0eca91c9e7e9056003885bcf578e3dbfdb3de2ff",
+      "bytes": 15912,
+      "ref": "4a8674496e2e110d4b27d6eb013727b3646f7512"
+    },
+    {
+      "repo": "nbogojevic/midea-beautiful-air",
+      "path": "midea_beautiful/midea.py",
+      "sha": "dabec0e3f0b0ace936cf9a0baf0dce16205feba0",
+      "bytes": 3695,
+      "ref": "4a8674496e2e110d4b27d6eb013727b3646f7512"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/device/AC/test_command.py",
+      "sha": "9fd9e50a9d187ca130f7ea687e7f5d67bbbea5df",
+      "bytes": 60788,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/frame.py",
+      "sha": "4f69b75e997afe4631344eb8132067cd7c34dc38",
+      "bytes": 2032,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/climate.py",
+      "sha": "4e1d8161b6ca81b300aed7d64c94366bba218995",
+      "bytes": 24290,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "nbogojevic/midea-beautiful-air",
+      "path": "midea_beautiful/scanner.py",
+      "sha": "12f1ed7a95fde82a9c664bf8306dd95318ac8c90",
+      "bytes": 8170,
+      "ref": "4a8674496e2e110d4b27d6eb013727b3646f7512"
+    },
+    {
+      "repo": "nbogojevic/midea-beautiful-air",
+      "path": "midea_beautiful/lan.py",
+      "sha": "3d923e4a7a983498faae4dac31eb6594211c1166",
+      "bytes": 36390,
+      "ref": "4a8674496e2e110d4b27d6eb013727b3646f7512"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/device/AC/command.py",
+      "sha": "8529eb428ab20f8d6975aacad2f5b54b9ab163ca",
+      "bytes": 50089,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/fan.py",
+      "sha": "8eadc740515173807c4219ad24bd8e8d865adc9d",
+      "bytes": 4587,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/button.py",
+      "sha": "c1da51c82127418f968b32fe38aff0cb1d7f03b3",
+      "bytes": 2726,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/discover.py",
+      "sha": "a84f21bfac207e75198c96fb037476969247c01e",
+      "bytes": 13820,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "midea-lan/midea-local",
+      "path": "midealocal/packet_builder.py",
+      "sha": "293817ef25560c276a6600e53a87bf12c93fd410",
+      "bytes": 2942,
+      "ref": "6fcfdaa75dfb736393c539e6c122c3cefca26e9e"
+    },
+    {
+      "repo": "midea-lan/midea-local",
+      "path": "midealocal/cloud.py",
+      "sha": "8980f442de477264d977d4c96f209c95d9ee3bea",
+      "bytes": 50619,
+      "ref": "6fcfdaa75dfb736393c539e6c122c3cefca26e9e"
+    },
+    {
+      "repo": "midea-lan/midea-local",
+      "path": "midealocal/discover.py",
+      "sha": "c3ac741a80461588a1a3ceec29eaaaea33b29ff6",
+      "bytes": 12378,
+      "ref": "6fcfdaa75dfb736393c539e6c122c3cefca26e9e"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/select.py",
+      "sha": "7f0c55cb3822ad05ec1b0f76dc8f6ae151bbae46",
+      "bytes": 5780,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "midea-lan/midea-local",
+      "path": "midealocal/security.py",
+      "sha": "0771fa04bc9507ef85ba82988ce2d201726f3763",
+      "bytes": 13500,
+      "ref": "6fcfdaa75dfb736393c539e6c122c3cefca26e9e"
+    },
+    {
+      "repo": "dudanov/MideaUART",
+      "path": "include/Frame/FrameData.h",
+      "sha": "23bd4427243961655dd719dc3c7efa04516d8a05",
+      "bytes": 2098,
+      "ref": "eeea6c3e9b4474f067054592b435be1c4e466815"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/number.py",
+      "sha": "55e9b5fef72244c3dadcf3ccbfd1b8d2e06bf56c",
+      "bytes": 4549,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/diagnostics.py",
+      "sha": "3cf1151c1d19c1b592cc0ca39fe7e6267df36c46",
+      "bytes": 761,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "midea-lan/midea-local",
+      "path": "midealocal/device.py",
+      "sha": "97a701222a4548d0ccc35e6fc28eb25fec1ab907",
+      "bytes": 49540,
+      "ref": "6fcfdaa75dfb736393c539e6c122c3cefca26e9e"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/const.py",
+      "sha": "49c8a0f2f3493c83d1b95a664a947584d938fd58",
+      "bytes": 1321,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/cloud.py",
+      "sha": "97af5fc41f0aa70f2db9efbbc3aa3614ee8a4c2d",
+      "bytes": 4023,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "midea-lan/midea-local",
+      "path": "midealocal/const/climate_exceptions.py",
+      "sha": "484080b928d7ca9a3e60e2ca74178f54c953eb1f",
+      "bytes": 533,
+      "ref": "6fcfdaa75dfb736393c539e6c122c3cefca26e9e"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/config_flow.py",
+      "sha": "c95b54cedf2f6e556e475cbc4099cdc0cd9f5ae2",
+      "bytes": 44657,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "dudanov/MideaUART",
+      "path": "src/Appliance/AirConditioner/Capabilities.cpp",
+      "sha": "a8ae14f6a2425ccd7d658ad7165d25e5a8e751a2",
+      "bytes": 10754,
+      "ref": "eeea6c3e9b4474f067054592b435be1c4e466815"
+    },
+    {
+      "repo": "dudanov/MideaUART",
+      "path": "include/Frame/Frame.h",
+      "sha": "f621a5754b69e2f0ee27fb89e1b0a1b1ac9fc80c",
+      "bytes": 1873,
+      "ref": "eeea6c3e9b4474f067054592b435be1c4e466815"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/binary_sensor.py",
+      "sha": "de8ab41c3a90611b0e3da725fd6fe3b3784e9090",
+      "bytes": 2081,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/device_proxy.py",
+      "sha": "3c21fcc73980dc213559be611a1f1b2bdd575226",
+      "bytes": 2489,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/lan.py",
+      "sha": "dc46005e5578330b7ce35409e9e9c2db0478b89f",
+      "bytes": 26327,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/midea_entity.py",
+      "sha": "d82cc8775ca7ce01eba32246ca88411776a8aee9",
+      "bytes": 10563,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "nbogojevic/midea-beautiful-air",
+      "path": "midea_beautiful/command.py",
+      "sha": "97781d9669bb4e623e8c126d0011fbcf58e01d7c",
+      "bytes": 26946,
+      "ref": "4a8674496e2e110d4b27d6eb013727b3646f7512"
+    },
+    {
+      "repo": "nbogojevic/midea-beautiful-air",
+      "path": "midea_beautiful/cloud.py",
+      "sha": "e972748e4cb7a255d0f1732fece89d555f3ff4a0",
+      "bytes": 22989,
+      "ref": "4a8674496e2e110d4b27d6eb013727b3646f7512"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/sensor.py",
+      "sha": "b52f68d5690f950b21f496ec6d81e6ff7a46ce63",
+      "bytes": 19808,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/sensor.py",
+      "sha": "4745d4784ed3d685d0dbda0168d16357e9cf4c48",
+      "bytes": 13167,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "dudanov/MideaUART",
+      "path": "include/Appliance/AirConditioner/StatusData.h",
+      "sha": "f67e11fb86e264a1cc5968b5816402f598d5b3cb",
+      "bytes": 5369,
+      "ref": "eeea6c3e9b4474f067054592b435be1c4e466815"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/switch.py",
+      "sha": "5a06f0277ed7e76346102bf71c31a8465dd6d573",
+      "bytes": 6803,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/select.py",
+      "sha": "e51d393211c77c858518c19929621623e37b714a",
+      "bytes": 5925,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/__init__.py",
+      "sha": "747d8ff2ae6cee5e25e73469e42418b2a1f98a9b",
+      "bytes": 17291,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "dudanov/MideaUART",
+      "path": "include/Appliance/AirConditioner/Capabilities.h",
+      "sha": "00c8d92b7f556fb907d4e89ca0b4b3bac32b3198",
+      "bytes": 3969,
+      "ref": "eeea6c3e9b4474f067054592b435be1c4e466815"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/coordinator.py",
+      "sha": "93441fb9e41367c0969b14fbd625aa19c705961c",
+      "bytes": 9948,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/device/AC/device.py",
+      "sha": "3fa962d3800dcc218c364624600b43cb1db5e80e",
+      "bytes": 60922,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/fan.py",
+      "sha": "f27747d15028458e94dc468abf86f6380077cb23",
+      "bytes": 17740,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "dudanov/MideaUART",
+      "path": "src/Frame/Frame.cpp",
+      "sha": "5e56f8c527d8d648fb8fc19acfa54181bf504446",
+      "bytes": 956,
+      "ref": "eeea6c3e9b4474f067054592b435be1c4e466815"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/__init__.py",
+      "sha": "fc9681bd022a172e00d2ea9bf515f6b41a2e576c",
+      "bytes": 9327,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "dudanov/MideaUART",
+      "path": "src/Appliance/AirConditioner/AirConditioner.cpp",
+      "sha": "acfe85efecfab4400fa3925d41346b5205aa99ef",
+      "bytes": 7273,
+      "ref": "eeea6c3e9b4474f067054592b435be1c4e466815"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/button.py",
+      "sha": "36e6caadf89ff4988be91f7420f78b16a543f380",
+      "bytes": 2835,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/binary_sensor.py",
+      "sha": "1c5687751f921796d9450a92f914c613e11e6f46",
+      "bytes": 5364,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/midea_devices.py",
+      "sha": "cd5374edbe66abf3b382fcf5005e058d941cb38a",
+      "bytes": 501555,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "midea-lan/midea-local",
+      "path": "midealocal/devices/ac/message.py",
+      "sha": "10e59b31cf9c4d9d58c5f3c34310a32001f64741",
+      "bytes": 83137,
+      "ref": "6fcfdaa75dfb736393c539e6c122c3cefca26e9e"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/native_temperature.py",
+      "sha": "3a8eb928d1888dd18f106bdb515a47f6ea69a81d",
+      "bytes": 2721,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "midea-lan/midea-local",
+      "path": "midealocal/message.py",
+      "sha": "ede9a3cbb8c0ec11f7cd346a1e6f82c0608d06ca",
+      "bytes": 37044,
+      "ref": "6fcfdaa75dfb736393c539e6c122c3cefca26e9e"
+    },
+    {
+      "repo": "dudanov/MideaUART",
+      "path": "src/Frame/FrameData.cpp",
+      "sha": "d36348f1b22a5fe439c1ac26212dee0726648d92",
+      "bytes": 2459,
+      "ref": "eeea6c3e9b4474f067054592b435be1c4e466815"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/climate.py",
+      "sha": "a28e4ee0ddf6f165ead0c7de72281656091518e9",
+      "bytes": 47821,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "ftedv-de/nl.intyme.midea",
+      "path": "scripts/patch-energy-decoder.js",
+      "sha": "139c7c864ecfec1a26a817f285da13469b885855",
+      "bytes": 9256,
+      "ref": "122ada70bfca7a7900ef6e9b04468c5867a04888"
+    },
+    {
+      "repo": "minguezdo/nl.intyme.midea",
+      "path": "drivers/airco/driver.ts",
+      "sha": "9e7ee460f2661eabe904f09115824efb5753c37d",
+      "bytes": 14992,
+      "ref": "287012d977b5660eab0a775fad70f90d83f65567"
+    },
+    {
+      "repo": "ftedv-de/nl.intyme.midea",
+      "path": "scripts/patch-midea-lib.js",
+      "sha": "48b1e7bfc0c1eeb3b03af534353782415ec0136f",
+      "bytes": 27412,
+      "ref": "122ada70bfca7a7900ef6e9b04468c5867a04888"
+    },
+    {
+      "repo": "mill1000/midea-ac-py",
+      "path": "custom_components/midea_ac/number.py",
+      "sha": "fbcbd5889fdf6c13b23dce8251052225f408caf7",
+      "bytes": 3118,
+      "ref": "0cbaad9a84fcd9bfe9fd458c6588172d059f3fd5"
+    },
+    {
+      "repo": "mill1000/midea-msmart",
+      "path": "msmart/device/AC/test_device.py",
+      "sha": "646a7426125d5a3f41051361109d05f5b331984f",
+      "bytes": 66396,
+      "ref": "1a92c14b84335d730db140a99242817e0ad93364"
+    },
+    {
+      "repo": "midea-lan/midea-local",
+      "path": "midealocal/devices/ac/__init__.py",
+      "sha": "c1551a7306e59a80c5682f31eb35803a890bd30d",
+      "bytes": 54370,
+      "ref": "6fcfdaa75dfb736393c539e6c122c3cefca26e9e"
+    },
+    {
+      "repo": "minguezdo/nl.intyme.midea",
+      "path": "scripts/patch-midea-lib.js",
+      "sha": "f95cd53838626f62fafa1a12c21b13345fd49068",
+      "bytes": 36163,
+      "ref": "287012d977b5660eab0a775fad70f90d83f65567"
+    },
+    {
+      "repo": "dudanov/MideaUART",
+      "path": "src/Appliance/AirConditioner/StatusData.cpp",
+      "sha": "899d4ce0606b8e6b3c9fbac78ff136398e0bf473",
+      "bytes": 3365,
+      "ref": "eeea6c3e9b4474f067054592b435be1c4e466815"
+    },
+    {
+      "repo": "ftedv-de/nl.intyme.midea",
+      "path": "scripts/patch-midea-command-queue.js",
+      "sha": "9f1de62c9e5b0f583de336bbb27b2acbedd7c955",
+      "bytes": 9034,
+      "ref": "122ada70bfca7a7900ef6e9b04468c5867a04888"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/switch.py",
+      "sha": "2523b464b383d4fb3f8bb69cdcec29de4d053cc7",
+      "bytes": 5374,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "minguezdo/nl.intyme.midea",
+      "path": "drivers/airco/device.ts",
+      "sha": "61a55b9305321d12dfe28c292da15a9ff9e5a15d",
+      "bytes": 52288,
+      "ref": "287012d977b5660eab0a775fad70f90d83f65567"
+    },
+    {
+      "repo": "nbogojevic/midea-beautiful-air",
+      "path": "midea_beautiful/appliance.py",
+      "sha": "42e567ef85f141c7586ec662e5d99d1281124e15",
+      "bytes": 27767,
+      "ref": "4a8674496e2e110d4b27d6eb013727b3646f7512"
+    },
+    {
+      "repo": "ftedv-de/nl.intyme.midea",
+      "path": "drivers/airco/device.ts",
+      "sha": "421b92ed91e3d2ecf23fdd07cfa3606ba621bde4",
+      "bytes": 23941,
+      "ref": "122ada70bfca7a7900ef6e9b04468c5867a04888"
+    },
+    {
+      "repo": "dudanov/MideaUART",
+      "path": "include/Appliance/AirConditioner/AirConditioner.h",
+      "sha": "6501edb1e6e032cbd802d49817383546a34ccc93",
+      "bytes": 2258,
+      "ref": "eeea6c3e9b4474f067054592b435be1c4e466815"
+    },
+    {
+      "repo": "ftedv-de/nl.intyme.midea",
+      "path": "drivers/airco/driver.ts",
+      "sha": "9e7ee460f2661eabe904f09115824efb5753c37d",
+      "bytes": 14992,
+      "ref": "122ada70bfca7a7900ef6e9b04468c5867a04888"
+    },
+    {
+      "repo": "wuwentao/midea_ac_lan",
+      "path": "custom_components/midea_ac_lan/const.py",
+      "sha": "b0fda9ba9ff3e7ad2c83c2e6ad0d668161aac646",
+      "bytes": 2736,
+      "ref": "fdff0c2a984ad373de9aa033fa4be6ea33d39ceb"
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/device_catalog.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "abd276e6700961d802dd4a6e21aaf8cc547a31f2",
+      "bytes": 1479
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/number.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "7bd1e21b103382164cf7fcad8f99368e27e788f0",
+      "bytes": 5501
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/__init__.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "bd9ca97b4dee8beafb7351025160c0d3e75b51ad",
+      "bytes": 6730
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/select.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "736a9dc689bcde30a93cf4e52e1e5c946830beb7",
+      "bytes": 5116
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/light.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "be7a22e755aabf190af7377d17b2ea1ad67df7af",
+      "bytes": 5155
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/diagnostics.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "1f805ab14b218df73bf6f9a0b8824cdd505d69ea",
+      "bytes": 676
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/humidifier.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "8024ef94319fbfd32333ce2ad8ff4a1d0c5ae8b0",
+      "bytes": 4175
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/water_heater.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "0711fbb83e339de923545c3a2558b3bd6bd3940d",
+      "bytes": 14260
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/entity.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "fa4e0875f377a5d210b26252aa03bb1430723a58",
+      "bytes": 3410
+    },
+    {
+      "repo": "itsklimov/nl.intyme.midea",
+      "path": "drivers/airco/discovery-targets.ts",
+      "ref": "ea23e7928d2b1cc62684878759a8a515854eaad7",
+      "sha": "72a54296a3c84f40efe71ac5fae71f3d1db6feb9",
+      "bytes": 2776
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/config_flow.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "b7e31fec639c8c4a1be2fa0681db376e11361e64",
+      "bytes": 35981
+    },
+    {
+      "repo": "itsklimov/nl.intyme.midea",
+      "path": "drivers/airco/driver.ts",
+      "ref": "ea23e7928d2b1cc62684878759a8a515854eaad7",
+      "sha": "2d8e19ddcd2dfd40617a6af9362f003c1bbcb865",
+      "bytes": 38855
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/manifest.json",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "f7968969703a898bee9719e2282770b12c4c6885",
+      "bytes": 561
+    },
+    {
+      "repo": "itsklimov/nl.intyme.midea",
+      "path": "drivers/airco/capabilities.ts",
+      "ref": "ea23e7928d2b1cc62684878759a8a515854eaad7",
+      "sha": "f779432050b9ce2642e1eda6f939d46a7a62d249",
+      "bytes": 9862
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/binary_sensor.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "d934e2bada3222ca982f5d6f4f497be5ed19324b",
+      "bytes": 6412
+    },
+    {
+      "repo": "itsklimov/nl.intyme.midea",
+      "path": "drivers/airco/device.ts",
+      "ref": "ea23e7928d2b1cc62684878759a8a515854eaad7",
+      "sha": "854a4eab39976d68b3049a1813ff96e466212ce4",
+      "bytes": 26289
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/time.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "922ddffccf5bfdcb22d0cc60b471122fe3ad4320",
+      "bytes": 2515
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/switch.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "f85bcddd5a20e99c8bb805d0899ef343fde07de2",
+      "bytes": 8728
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/climate.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "f533e1401c6d890f4758dc15f5dea6bce0a0ffb1",
+      "bytes": 24395
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/fan.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "417132d0e3f254cfd2eec0c842443c85ae0597b8",
+      "bytes": 7693
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/button.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "da014fe2d2ceb9fa83ce4c94891f1d405f0d82df",
+      "bytes": 3080
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/sensor.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "8251b374ce26de79e89960af64bf15e8b1451b6d",
+      "bytes": 40433
+    },
+    {
+      "repo": "home-assistant/core",
+      "path": "homeassistant/components/midea/const.py",
+      "ref": "b6d170e22714866fdd8a50f865013bed9648f606",
+      "sha": "9d2cd5a439d9429a480f4eda512ec3cc6a8a846f",
+      "bytes": 420
+    }
+  ]
+}

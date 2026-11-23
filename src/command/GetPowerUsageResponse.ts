@@ -1,4 +1,4 @@
-export type EnergyDecodeMode = 'bcd' | 'binary';
+export type EnergyDecodeMode = 'bcd' | 'binary' | 'binary100' | 'mixed' | 'bcdEnergyBinaryPower';
 
 export class GetPowerUsageResponse {
     public readonly totalEnergy: number;
@@ -8,18 +8,24 @@ export class GetPowerUsageResponse {
         if (!Buffer.isBuffer(frame) || frame.length < 31) throw new Error('Truncated energy response');
         const data = frame.subarray(10, frame.length - 2);
         if (data[0] !== 0xC1 || (data[3] & 15) !== 4) throw new Error('Unexpected energy response');
-        if (decodeMode !== 'bcd' && decodeMode !== 'binary') throw new Error('Unknown energy format');
+        if (!['bcd','binary','binary100','mixed','bcdEnergyBinaryPower'].includes(decodeMode))
+            throw new Error('Unknown energy format');
         const bcd = (byte: number): number => {
             if ((byte >> 4) > 9 || (byte & 15) > 9) throw new Error('Invalid BCD energy data');
             return (byte >> 4) * 10 + (byte & 15);
         };
-        const energy = (offset: number): number => decodeMode === 'binary'
-            ? data.readUInt32BE(offset) / 10
-            : Math.round((10000 * bcd(data[offset]) + 100 * bcd(data[offset + 1])
-                + bcd(data[offset + 2]) + bcd(data[offset + 3]) / 100) * 100) / 100;
-        this.totalEnergy = energy(4);
-        this.currentEnergy = energy(12);
-        this.realTimePower = decodeMode === 'binary' ? data.readUIntBE(16, 3) / 10
-            : Math.round((1000 * bcd(data[16]) + 10 * bcd(data[17]) + bcd(data[18]) / 10) * 10) / 10;
+        const parse = (offset: number, length: number, binary: boolean): number => {
+            let result = 0;
+            for (const byte of data.subarray(offset, offset + length)) {
+                if (decodeMode === 'mixed' && byte > 99) throw new Error('Invalid mixed energy data');
+                result = result * (binary ? 256 : 100) +
+                    (binary || decodeMode === 'mixed' ? byte : bcd(byte));
+            }
+            return result;
+        };
+        const binaryEnergy = decodeMode === 'binary' || decodeMode === 'binary100';
+        const energy = (offset: number) => parse(offset,4,binaryEnergy) / (decodeMode === 'binary' ? 10 : 100);
+        this.totalEnergy = energy(4); this.currentEnergy = energy(12);
+        this.realTimePower = parse(16,3,binaryEnergy || decodeMode === 'bcdEnergyBinaryPower') / 10;
     }
 }

@@ -9,7 +9,8 @@ import { GetStateCommand } from './GetStateCommand';
 import { LANCommand } from './LANCommand';
 
 export class SetStateCommand extends LANCommand {
-	constructor(device: Device, deviceState: DeviceState) {
+    private readonly profile: DeviceState['protocolProfile'];
+	constructor(device: Device, deviceState: DeviceState, options: { resetFilter?: boolean } = {}) {
 		if (!Number.isFinite(deviceState.targetTemperature)
             || deviceState.targetTemperature < 12 || deviceState.targetTemperature > 43.5
             || !Number.isInteger(deviceState.targetTemperature * 2)) throw new Error('Invalid target temperature');
@@ -20,6 +21,9 @@ export class SetStateCommand extends LANCommand {
         if (!Number.isInteger(deviceState.operationalMode) || deviceState.operationalMode < 0 || deviceState.operationalMode > 6)
             throw new Error('Invalid operational mode');
         if (![0, 3, 12, 15].includes(deviceState.swingMode)) throw new Error('Invalid swing mode');
+        // Byte 22 bit 3 conflicts across model profiles; never infer its meaning.
+        if (options.resetFilter && deviceState.protocolProfile !== 'standard') throw new Error('Filter reset requires the standard state profile');
+        if (deviceState.independentAuxHeat && deviceState.protocolProfile !== 'msmartAuxHeat') throw new Error('Independent auxiliary heat requires an explicit model profile');
         const beep = deviceState.beepOn ? 0x40 : 0;
 		const powerOn = deviceState.powerOn ? 0x1 : 0;
 		const targetTemperatureFractional = deviceState.targetTemperature % 1;
@@ -30,12 +34,12 @@ export class SetStateCommand extends LANCommand {
         const alternateTemperature = primaryTemperature ? 0 : (targetTemperatureIntegral - 12) & 0x1F;
 		const operationalMode = (deviceState.operationalMode & 0x7) << 5;
 		const swingMode = 0x30 | (deviceState.swingMode & 0x3F);
-		const ecoMode = (deviceState.ecoMode ? 0x80 : 0) | (deviceState.anionMode ? 0x20 : 0) | (deviceState.auxHeat ? 8 : 0);
+		const ecoMode = (deviceState.ecoMode ? 0x80 : 0) | (deviceState.anionMode ? 0x20 : 0) | (deviceState.auxHeat ? 8 : 0) | (deviceState.dryFunction ? 4 : 0) | (deviceState.protocolProfile === 'standard' && deviceState.smartEye ? 1 : 0);
 		const sleepMode = deviceState.sleepMode ? 0x01 : 0;
 		const turboMode = deviceState.turboMode ? 0x02 : 0;
 		const display = /*displayOn*/false ? 0x10 : 0;
 		const fahrenheit = deviceState.fahrenheit ? 0x04 : 0;
-		const turboAlt = (deviceState.turboMode ? 0x20 : 0) | (deviceState.followMe ? 0x80 : 0);
+		const turboAlt = (deviceState.turboMode ? 0x20 : 0) | (deviceState.followMe ? 0x80 : 0) | (deviceState.powerSaving ? 8 : 0);
 		const freezeProtectionMode = deviceState.freezeProtectionMode ? 0x80 : 0x00;
 
 		super(device, Buffer.from([
@@ -47,18 +51,19 @@ export class SetStateCommand extends LANCommand {
 			swingMode,
 			turboAlt,
 			ecoMode,
-			sleepMode | turboMode | display | fahrenheit,
+			sleepMode | turboMode | display | fahrenheit | (options.resetFilter ? 0x80 : 0),
 			0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, alternateTemperature,
+			0x00, 0x00, deviceState.naturalWind ? 0x40 : 0, alternateTemperature,
 			deviceState.targetHumidity & 0x7F, 0x00, 
 			freezeProtectionMode,
-			deviceState.independentAuxHeat ? 8 : 0, 0x00,
+			(deviceState.comfortMode ? 1 : 0) | (options.resetFilter || (deviceState.protocolProfile === 'msmartAuxHeat' && deviceState.independentAuxHeat) ? 8 : 0), 0x00,
 		]), FRAME_TYPE.SET);
+        this.profile = deviceState.protocolProfile;
 	}
 
 	public async execute(): Promise<GetStateResponse> {
 		_LOGGER.debug("SetStateCommand::execute()");
 		await super.execute();
-		return new GetStateCommand(this._device).execute();
+		return new GetStateCommand(this._device, this.profile).execute();
 	}
 }

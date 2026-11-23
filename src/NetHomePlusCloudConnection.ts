@@ -9,24 +9,19 @@ import dateFormat from "dateformat";
 
 export class NetHomePlusCloudConnection extends CloudConnection {
     private _sign(body: any, endpoint: string): string {
-        _LOGGER.debug("NetHomePlusCloudConnection::_sign(" + body + ", " + endpoint + ")");
         const query = Object.entries(body).sort().map(([key, value]) => { return key + '=' + (String(value)); }).join('&');
         const msg: string = endpoint + query + NETHOMEPLUS_APP_KEY;
         const sign = crypto.createHash("sha256").update(msg, "utf8").digest("hex");
-        _LOGGER.debug("NetHomePlusCloudConnection::_sign(" + body + ", " + endpoint + ") = " + sign);
         return sign;
     }
 
     private _encryptPassword(loginId: string, password: string): string {
-		_LOGGER.debug("NetHomePlusCloudConnection::_encryptPassword(****, ****)");
 		const hashedPassword: string = crypto.createHash('sha256').update(password, 'utf-8').digest('hex');
 		const encrypted = crypto.createHash('sha256').update(`${loginId}${hashedPassword}${NETHOMEPLUS_APP_KEY}`, 'utf-8').digest('hex');
-		_LOGGER.debug("NetHomePlusCloudConnection::_encryptPassword() = " + encrypted);
 		return encrypted;
 	}
 
     private _createRequest(data: {}) {
-        _LOGGER.debug("NetHomePlusCloudConnection::_createRequest()");
         const body = {
             appId: NETHOMEPLUS_APP_ID,
             src: NETHOMEPLUS_SRC,
@@ -37,12 +32,12 @@ export class NetHomePlusCloudConnection extends CloudConnection {
 			stamp: dateFormat(new Date(), "yyyymmddHHMMss"),
         };
         Object.assign(body, data);
-        _LOGGER.debug("NetHomePlusCloudConnection::_createRequest() = " + JSON.stringify(body));
         return body;
     }
 
     private async _executeRequest(endpoint: string, sessionId: string, body: any) {
-        _LOGGER.debug("NetHomePlusCloudConnection::_executeRequest()");
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000);
         try {
             body.sessionId = sessionId;
             body.sign = this._sign(body, endpoint);
@@ -56,30 +51,34 @@ export class NetHomePlusCloudConnection extends CloudConnection {
 
             const response = await fetch(NETHOMEPLUS_API_URL + endpoint, {
                 method: "POST",
+                signal: controller.signal,
                 body: formData
             });
-            return await response.json();
+            if (!response.ok) throw new Error('Cloud HTTP error: ' + response.status);
+            const result = await response.json();
+            const code = result.code ?? result.errorCode;
+            if (code !== undefined && Number(code) !== 0)
+                throw new Error('Cloud API error ' + code + ': ' + (result.msg ?? result.message ?? 'Unknown error'));
+            return result;
         }
         catch (error) {
             _LOGGER.error("Error in NetHomePlusCloudConnection::_executeRequest()", error);
             throw error;
-        }
+        } finally { clearTimeout(timeout); }
     }
 
     private async _getLoginId(account: string):  Promise<string>  {
-        _LOGGER.debug("NetHomePlusCloudConnection::_getLoginId()");
         try {
             const response = await this._executeRequest("/v1/user/login/id/get", /*sessionId*/ "", this._createRequest({
                 "loginAccount": account
             }));
-            _LOGGER.http("NetHomePlusCloudConnection::_getLoginId()::response = " + JSON.stringify(response));
 
-            if (response.code > 0) {
-                _LOGGER.error("Error in NetHomePlusCloudConnection::_getLoginId() - " + response.code + ": " + response.message);
-                throw new Error("Error in NetHomePlusCloudConnection::_getLoginId() - " + response.code + ": " + response.message);
+            if (Number(response.code ?? response.errorCode ?? 0) !== 0) {
+                _LOGGER.error("Error in NetHomePlusCloudConnection::_getLoginId() - " + response.code + ": " + (response.msg ?? response.message ?? "Unknown error"));
+                throw new Error("Error in NetHomePlusCloudConnection::_getLoginId() - " + response.code + ": " + (response.msg ?? response.message ?? "Unknown error"));
             }
 
-            _LOGGER.debug("NetHomePlusCloudConnection::_getLoginId() = " + response.result.loginId);
+            if (!response.result?.loginId) throw new Error('Cloud login returned no loginId');
             return response.result.loginId;
         }
         catch (error) {
@@ -89,21 +88,19 @@ export class NetHomePlusCloudConnection extends CloudConnection {
     }
 
     private async _login(account: string, password: string, loginId: string): Promise<string> {
-        _LOGGER.debug("NetHomePlusCloudConnection::_login()");
         try {
             const response = await this._executeRequest("/v1/user/login", /*sessionId*/ "", this._createRequest({
                 loginAccount: account,
                 password: this._encryptPassword(loginId, password)
             }));
-            _LOGGER.http("NetHomePlusCloudConnection::_login()::response = " + JSON.stringify(response));
 
-            if (response.code > 0) {
-                _LOGGER.error("Error in NetHomePlusCloudConnection::_login() - " + response.code + ": " + response.message);
-                throw new Error("Error in NetHomePlusCloudConnection::_login() - " + response.code + ": " + response.message);
+            if (Number(response.code ?? response.errorCode ?? 0) !== 0) {
+                _LOGGER.error("Error in NetHomePlusCloudConnection::_login() - " + response.code + ": " + (response.msg ?? response.message ?? "Unknown error"));
+                throw new Error("Error in NetHomePlusCloudConnection::_login() - " + response.code + ": " + (response.msg ?? response.message ?? "Unknown error"));
             }
 
-            const sessionId = response.result.sessionId;
-            _LOGGER.debug("NetHomePlusCloudConnection::_login() = " + sessionId);
+            const sessionId = response.result?.sessionId;
+            if (!sessionId) throw new Error('Cloud login returned no sessionId');
             return sessionId;
         }
         catch (error) {
@@ -113,19 +110,17 @@ export class NetHomePlusCloudConnection extends CloudConnection {
     }
 
     public async _getTokenAndKey(sessionId: string, udpId: string): Promise<TokenAndKey> {
-        _LOGGER.debug("NetHomePlusCloudConnection::_getTokenAndKey()");
         try {
             const response = await this._executeRequest("/v1/iot/secure/getToken", sessionId, this._createRequest({
                 udpid: udpId
             }));
-            _LOGGER.http("NetHomePlusCloudConnection::_getTokenAndKey()::response = " + JSON.stringify(response));
 
-            if (response.code > 0) {
-                _LOGGER.error("Error in NetHomePlusCloudConnection::_getTokenAndKey() - " + response.code + ": " + response.message);
-                throw new Error("Error in NetHomePlusCloudConnection::_getTokenAndKey() - " + response.code + ": " + response.message);
+            if (Number(response.code ?? response.errorCode ?? 0) !== 0) {
+                _LOGGER.error("Error in NetHomePlusCloudConnection::_getTokenAndKey() - " + response.code + ": " + (response.msg ?? response.message ?? "Unknown error"));
+                throw new Error("Error in NetHomePlusCloudConnection::_getTokenAndKey() - " + response.code + ": " + (response.msg ?? response.message ?? "Unknown error"));
             }
 
-            const tokenPair = response.result.tokenlist.find((pair: { udpId: string; token: string; key: string; }) => pair.udpId === udpId);
+            const tokenPair = (response.result?.tokenlist ?? []).find((pair: { udpId: string; token: string; key: string; }) => pair.udpId === udpId);
             if (!tokenPair) {
                 _LOGGER.error(`Token and key for udpId ${udpId} not found.`);
                 throw new Error(`Token and key for udpId ${udpId} not found.`);
@@ -139,17 +134,14 @@ export class NetHomePlusCloudConnection extends CloudConnection {
     }
 
     public isAuthenticated(cloudSecurityContext: CloudSecurityContext): boolean {
-        const _authenticated = (cloudSecurityContext.sessionId != null);
-        _LOGGER.debug("NetHomePlusCloudConnection::isauthenticate() = " + _authenticated);
+        const _authenticated = Boolean(cloudSecurityContext.sessionId);
         return _authenticated;
     }
 
     public async authenticate(cloudSecurityContext: CloudSecurityContext): Promise<CloudSecurityContext> {
-        _LOGGER.debug("NetHomePlusCloudConnection::authenticate()");
         try {
             cloudSecurityContext.loginId = await this._getLoginId(cloudSecurityContext.account);
             cloudSecurityContext.sessionId = await this._login(cloudSecurityContext.account, cloudSecurityContext.password, cloudSecurityContext.loginId);
-            _LOGGER.debug("NetHomePlusCloudConnection::_authenticate() = " + JSON.stringify(cloudSecurityContext));
 
             return cloudSecurityContext;
         }
@@ -160,7 +152,6 @@ export class NetHomePlusCloudConnection extends CloudConnection {
     }
 
     public async executeCommand(cloudSecurityContext: CloudSecurityContext, endpoint: string, body: any): Promise<any> {
-        _LOGGER.debug("NetHomePlusCloudConnection::executeCommand()");
         await this.authenticate(cloudSecurityContext);
         return this._executeRequest(endpoint, cloudSecurityContext.sessionId, this._createRequest(body));
     }

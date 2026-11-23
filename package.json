@@ -19,7 +19,9 @@
     "test": "jest",
     "prepare": "npm run build",
     "test:capabilities": "npm run build && node --test tests/capabilities.test.cjs",
-    "test:states": "npm run build && node --test tests/states.test.cjs"
+    "test:states": "npm run build && node --test tests/states.test.cjs",
+    "test:protocol": "npm run build && node --test tests/*.test.cjs",
+    "test:all": "npm run test:protocol && jest --runInBand --watchman=false --coverage=false --testPathIgnorePatterns=dist --testMatch=**/src/Security.test.ts"
   },
   "name": "midea-msmarthome-ac-euosk105",
   "version": "1.1.11-capabilities.0",

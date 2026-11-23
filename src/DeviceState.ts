@@ -1,6 +1,6 @@
 "use strict";
 
-export const enum OPERATIONAL_MODE {
+export enum OPERATIONAL_MODE {
 	AUTO= 1,
 	COOL =  2,
 	DRY = 3,
@@ -9,7 +9,7 @@ export const enum OPERATIONAL_MODE {
 	CUSTOM_DRY = 6
 };
 
-export const enum FAN_SPEED {
+export enum FAN_SPEED {
 	AUTO = 102,		// 0x66
 	FIXED = 101,	// 0x65
 	SILENT = 20,	// 0x14
@@ -19,14 +19,14 @@ export const enum FAN_SPEED {
 	FULL = 100		// 0x64
 };
 
-export const enum SWING_MODE {
+export enum SWING_MODE {
 	OFF = 0x0,
 	VERTICAL = 0xC,
 	HORIZONTAL = 0x3,
 	BOTH = 0xF
 }
 
-export const enum SWING_ANGLE {
+export enum SWING_ANGLE {
 	OFF = 0,
 	POS_1 = 1,
 	POS_2 = 25,
@@ -38,10 +38,33 @@ export const enum SWING_ANGLE {
 export const MIN_TARGET_TEMPERATURE = 16;
 export const MAX_TARGET_TEMPERATURE = 30;
 
+export type StateProtocolProfile = 'standard' | 'msmartAuxHeat';
+
 export class DeviceState {
+    public protocolProfile: StateProtocolProfile = 'standard';
     private _reportedState: Record<string, boolean | number> = {};
     /** Values actually read from a response or explicitly assigned by the caller. */
     public toStateSnapshot(): Record<string, boolean | number> { return { ...this._reportedState }; }
+
+    private _powerSaving: boolean = false;
+    public get powerSaving(): boolean { return this._powerSaving; }
+    public set powerSaving(value: boolean) { this._powerSaving = value; this._reportedState.powerSaving = value; }
+
+    private _naturalWind: boolean = false;
+    public get naturalWind(): boolean { return this._naturalWind; }
+    public set naturalWind(value: boolean) { this._naturalWind = value; this._reportedState.naturalWind = value; }
+
+    private _dryFunction: boolean = false;
+    public get dryFunction(): boolean { return this._dryFunction; }
+    public set dryFunction(value: boolean) { this._dryFunction = value; this._reportedState.dryFunction = value; }
+
+    private _comfortMode: boolean = false;
+    public get comfortMode(): boolean { return this._comfortMode; }
+    public set comfortMode(value: boolean) { this._comfortMode = value; this._reportedState.comfortMode = value; }
+
+    private _smartEye = false;
+    public get smartEye(): boolean { return this._smartEye; }
+    public set smartEye(value: boolean) { this._smartEye = value; this._reportedState.smartEye = value; }
 
     private _followMe: boolean = false;
     public get followMe(): boolean { return this._followMe; }

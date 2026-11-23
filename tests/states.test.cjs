@@ -148,3 +148,20 @@ test('invalid basic state values are rejected instead of wrapped into wire field
         assert.throws(() => new lib.SetStateCommand(device(),s), /Invalid/);
     }
 });
+
+test('standard extra flags round-trip and auxiliary heat never resets filter counters', () => {
+ const f=basic(); f[18]|=8; f[19]|=6;
+ const s=new lib.GetStateResponse(f);
+ assert.equal(s.powerSaving,true); assert.equal(s.naturalWind,true); assert.equal(s.dryFunction,true);
+ s.comfortMode=true;
+ const p=payload(new lib.SetStateCommand(device(),s));
+ assert.equal(p[8]&8,8);assert.equal(p[9]&4,4);assert.equal(p[17]&0x40,0x40);
+ assert.equal(p[22],1);assert.equal(p[10]&0x80,0);
+ const reset=payload(new lib.SetStateCommand(device(),s,{resetFilter:true}));
+ assert.equal(reset[10]&0x80,0x80);assert.equal(reset[22]&8,8);
+ s.independentAuxHeat=true;
+ assert.throws(()=>new lib.SetStateCommand(device(),s),/explicit model profile/);
+ s.protocolProfile='msmartAuxHeat';
+ assert.equal(payload(new lib.SetStateCommand(device(),s))[22]&8,8);
+ assert.throws(()=>new lib.SetStateCommand(device(),s,{resetFilter:true}),/standard state profile/);
+});

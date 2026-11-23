@@ -13,3 +13,9 @@ export { Appliance } from './Appliance';
 export { HomeGroup } from './HomeGroup';
 export * from './command';
 export { _LOGGER } from './Logger';
+export { LANConnectionOptions } from './LANConnection';
+export { PacketStream } from './PacketStream';
+
+export { StateProtocolProfile } from './DeviceState';
+
+export { OPERATIONAL_MODE, FAN_SPEED, SWING_MODE, SWING_ANGLE } from './DeviceState';
