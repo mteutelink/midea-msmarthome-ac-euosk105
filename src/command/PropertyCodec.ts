@@ -110,7 +110,7 @@ export function decodeProperty(id: PROPERTY_ID, data: Buffer): PropertyValue | u
 export function createSetPropertiesPayload(properties: ReadonlyMap<PROPERTY_ID, PropertyValue>,
     caps?: DeviceCapabilities): Buffer {
     if (!properties.size || properties.size > 255) throw new Error('Expected 1..255 properties');
-    const parts = [Buffer.from([0xB0, properties.size])];
+    const parts: Buffer[] = [Buffer.from([0xB0, properties.size])];
     for (const [id, value] of properties) {
         const encoded = encodeProperty(id, value, caps);
         const header = Buffer.alloc(3);

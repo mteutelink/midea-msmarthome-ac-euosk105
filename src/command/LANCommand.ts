@@ -174,10 +174,10 @@ export abstract class LANCommand implements Command {
 	public async execute(): Promise<any> {
 		_LOGGER.debug("Command::execute()");
 		const previous = LANCommand.queues.get(this._device) ?? Promise.resolve();
-        const run = previous.catch(() => undefined).then(
+        const run = previous.catch((): undefined => undefined).then(
             () => this._device.lanConnection.executeCommand(this._request)
         );
-        const tail = run.then(() => undefined, () => undefined);
+        const tail = run.then((): undefined => undefined, (): undefined => undefined);
         LANCommand.queues.set(this._device, tail);
         return run.finally(() => {
             if (LANCommand.queues.get(this._device) === tail) LANCommand.queues.delete(this._device);

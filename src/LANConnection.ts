@@ -20,7 +20,7 @@ export class LANConnection {
     constructor(private readonly device: Device, private readonly options: LANConnectionOptions = {}) {}
     private serial<T>(action: () => Promise<T>): Promise<T> {
         const run = this.queue.then(action, action);
-        this.queue = run.then(() => undefined, () => undefined);
+        this.queue = run.then((): undefined => undefined, (): undefined => undefined);
         return run;
     }
     private async connect(): Promise<Socket> {
