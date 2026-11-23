@@ -1,43 +1,29 @@
-"use strict";
+import { PROPERTY_ID, PropertyValue, decodeProperty } from './PropertyCodec';
 
-import { PROPERTY_ID } from './GetPropertiesCommand';
+export class GetPropertiesResponse extends Map<PROPERTY_ID, PropertyValue> {
+    public readonly errors = new Map<PROPERTY_ID, number>();
+    public readonly raw = new Map<number, Buffer>();
 
-export class GetPropertiesResponse extends Map<PROPERTY_ID, any> {
-	constructor(data: Buffer) {
-		super();
-		data = data.subarray(10, data.length - 2);
-
-		const result: { [key: string]: any } = {};
-		let offset = 2;
-		try {
-			while (offset < data.length) {
-				const param = data[offset] + (data[offset + 1] << 8);
-				const length = data[offset + 3];
-				if (length > 0) {
-					const value = data[offset + 4];
-					switch (param) {
-						case PROPERTY_ID.SWING_UD_ANGLE: {
-							this.set(PROPERTY_ID.SWING_UD_ANGLE, value);
-							break;
-						}
-						case PROPERTY_ID.SWING_LR_ANGLE: {
-							this.set(PROPERTY_ID.SWING_LR_ANGLE, value);
-							break;
-						}
-						case PROPERTY_ID.SELF_CLEAN: {
-							this.set(PROPERTY_ID.SELF_CLEAN, value === 0x1);
-							break;
-						}
-						case PROPERTY_ID.INDIRECT_WIND: {
-							this.set(PROPERTY_ID.INDIRECT_WIND, value === 0x02);
-							break;
-						}
-					}
-				}
-				offset += 4 + length;
-			}
-		} catch (e) {
-			console.error(e);
-		}
-	}
+    constructor(frame: Buffer) {
+        super();
+        if (!Buffer.isBuffer(frame) || frame.length < 14) throw new Error('Truncated properties response');
+        const data = frame.subarray(10, frame.length - 2);
+        if (data[0] !== 0xB0 && data[0] !== 0xB1) throw new Error('Unexpected properties response type');
+        let offset = 2;
+        for (let i = 0; i < data[1]; i++) {
+            if (offset + 4 > data.length) throw new Error('Truncated property header');
+            const id = data.readUInt16LE(offset) as PROPERTY_ID;
+            const result = data[offset + 2];
+            const length = data[offset + 3];
+            if (offset + 4 + length > data.length) throw new Error('Truncated property payload');
+            const bytes = Buffer.from(data.subarray(offset + 4, offset + 4 + length));
+            this.raw.set(id, bytes);
+            if (result & 0x10) this.errors.set(id, result);
+            else {
+                const value = decodeProperty(id, bytes);
+                if (value !== undefined) this.set(id, value);
+            }
+            offset += 4 + length;
+        }
+    }
 }

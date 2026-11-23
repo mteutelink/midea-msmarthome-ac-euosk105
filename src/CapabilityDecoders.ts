@@ -13,6 +13,13 @@ export function decodeExtendedCapability(caps: DeviceCapabilities, id: number, d
         case 0x0009: set('swingVerticalAngle', [1]); break;
         case 0x000A: set('swingHorizontalAngle', [1]); break;
         case 0x0018: set('breezeless', [1]); break;
+        case 0x0033: set('windOffMe', [1]); break;
+        case 0x0043: set('breezeControl', [1]); break;
+        case 0x0224: set('lightControl', [1, 2, 100]); break;
+        case 0x0212:
+            set('ecoMode', [1, 2]);
+            set('specialEco', [2]);
+            break;
         case 0x0039: set('selfClean', [1]); break;
         case 0x0048:
             set('rateSelect2Level', [1]);

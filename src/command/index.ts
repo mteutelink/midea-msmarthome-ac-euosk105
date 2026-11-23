@@ -15,3 +15,10 @@ export { ListAppliancesResponse } from './ListAppliancesResponse';
 export { ListHomeGroupsCommand } from './ListHomeGroupsCommand';
 export { ListHomeGroupsResponse } from './ListHomeGroupsResponse';
 export { SetStateCommand } from './SetStateCommand';
+
+export { IEcoState, PropertyValue } from './PropertyCodec';
+export { GetSensorStateCommand, GetSensorStateResponse } from './GetSensorStateCommand';
+export { EnergyDecodeMode } from './GetPowerUsageResponse';
+export { GetAllStatesCommand, AllStatesOptions, AllStatesSnapshot } from './GetAllStatesCommand';
+export { ToggleDisplayCommand } from './ToggleDisplayCommand';
+export { SetFollowMeTemperatureCommand } from './SetFollowMeTemperatureCommand';

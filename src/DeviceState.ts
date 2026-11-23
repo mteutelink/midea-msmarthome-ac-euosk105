@@ -39,6 +39,42 @@ export const MIN_TARGET_TEMPERATURE = 16;
 export const MAX_TARGET_TEMPERATURE = 30;
 
 export class DeviceState {
+    private _reportedState: Record<string, boolean | number> = {};
+    /** Values actually read from a response or explicitly assigned by the caller. */
+    public toStateSnapshot(): Record<string, boolean | number> { return { ...this._reportedState }; }
+
+    private _followMe: boolean = false;
+    public get followMe(): boolean { return this._followMe; }
+    public set followMe(value: boolean) { this._followMe = value; this._reportedState.followMe = value; }
+
+    private _anionMode: boolean = false;
+    public get anionMode(): boolean { return this._anionMode; }
+    public set anionMode(value: boolean) { this._anionMode = value; this._reportedState.anionMode = value; }
+
+    private _displayOn: boolean = false;
+    public get displayOn(): boolean { return this._displayOn; }
+    public set displayOn(value: boolean) { this._displayOn = value; this._reportedState.displayOn = value; }
+
+    private _filterAlert: boolean = false;
+    public get filterAlert(): boolean { return this._filterAlert; }
+    public set filterAlert(value: boolean) { this._filterAlert = value; this._reportedState.filterAlert = value; }
+
+    private _auxHeat: boolean = false;
+    public get auxHeat(): boolean { return this._auxHeat; }
+    public set auxHeat(value: boolean) { this._auxHeat = value; this._reportedState.auxHeat = value; }
+
+    private _independentAuxHeat: boolean = false;
+    public get independentAuxHeat(): boolean { return this._independentAuxHeat; }
+    public set independentAuxHeat(value: boolean) { this._independentAuxHeat = value; this._reportedState.independentAuxHeat = value; }
+
+    private _beepOn: boolean = false;
+    public get beepOn(): boolean { return this._beepOn; }
+    public set beepOn(value: boolean) { this._beepOn = value; this._reportedState.beepOn = value; }
+
+    private _targetHumidity: number = 0;
+    public get targetHumidity(): number { return this._targetHumidity; }
+    public set targetHumidity(value: number) { this._targetHumidity = value; this._reportedState.targetHumidity = value; }
+
 	private _powerOn: boolean = false;
 	private _operationalMode: OPERATIONAL_MODE = OPERATIONAL_MODE.AUTO;
 	private _fanSpeed: FAN_SPEED = FAN_SPEED.AUTO;
@@ -92,6 +128,7 @@ export class DeviceState {
 
 	set powerOn(value) {
 		this._powerOn = value;
+        this._reportedState.powerOn = value;
 	}
 
 	// OPERATIONAL_MODE
@@ -101,6 +138,7 @@ export class DeviceState {
 
 	set operationalMode(operationalMode) {
 		this._operationalMode = operationalMode;
+        this._reportedState.operationalMode = operationalMode;
 	}
 
 	// FAN_SPEED
@@ -110,6 +148,7 @@ export class DeviceState {
 
 	set fanSpeed(fanSpeed) {
 		this._fanSpeed = fanSpeed;
+        this._reportedState.fanSpeed = fanSpeed;
 	}
 
 	// SWING_MODE
@@ -119,6 +158,7 @@ export class DeviceState {
 
 	set swingMode(swingMode) {
 		this._swingMode = swingMode;
+        this._reportedState.swingMode = swingMode;
 	}
 
 	// HORIZONTAL_SWING_ANGLE
@@ -128,6 +168,7 @@ export class DeviceState {
 
 	set horizontalSwingAngle(horizontalSwingAngle) {
 		this._horizontalSwingAngle = horizontalSwingAngle;
+        this._reportedState.horizontalSwingAngle = horizontalSwingAngle;
 	}
 
 	// VERTICAL_SWING_ANGLE
@@ -137,6 +178,7 @@ export class DeviceState {
 
 	set verticalSwingAngle(verticalSwingAngle) {
 		this._verticalSwingAngle = verticalSwingAngle;
+        this._reportedState.verticalSwingAngle = verticalSwingAngle;
 	}
 
 	// TURBO_MODE
@@ -146,6 +188,7 @@ export class DeviceState {
 
 	set turboMode(turboMode) {
 		this._turboMode = turboMode;
+        this._reportedState.turboMode = turboMode;
 	}
 
 	// ECO_MODE
@@ -155,6 +198,7 @@ export class DeviceState {
 
 	set ecoMode(ecoMode) {
 		this._ecoMode = ecoMode;
+        this._reportedState.ecoMode = ecoMode;
 	}
 
 	// SLEEP_MODE
@@ -164,6 +208,7 @@ export class DeviceState {
 
 	set sleepMode(sleepMode) {
 		this._sleepMode = sleepMode;
+        this._reportedState.sleepMode = sleepMode;
 	}
 
 	// FREEZE_PROTECTION_MODE
@@ -173,6 +218,7 @@ export class DeviceState {
 
 	set freezeProtectionMode(freezeProtectionMode) {
 		this._freezeProtectionMode = freezeProtectionMode;
+        this._reportedState.freezeProtectionMode = freezeProtectionMode;
 	}
 
 	// FAHRENHEIT
@@ -182,6 +228,7 @@ export class DeviceState {
 
 	set fahrenheit(fahrenheit) {
 		this._fahrenheit = fahrenheit;
+        this._reportedState.fahrenheit = fahrenheit;
 	}
 
 	// TARGET_TEMPERATURE
@@ -191,6 +238,7 @@ export class DeviceState {
 
 	set targetTemperature(targetTemperature) {
 		this._targetTemperature = targetTemperature;
+        this._reportedState.targetTemperature = targetTemperature;
 	}
 
 	// INDOOR_TEMPERATURE
@@ -200,6 +248,7 @@ export class DeviceState {
 
 	set indoorTemperature(indoorTemperature) {
 		this._indoorTemperature = indoorTemperature;
+        this._reportedState.indoorTemperature = indoorTemperature;
 	}
 
 	// OUTDOOR_TEMPERATURE
@@ -209,6 +258,7 @@ export class DeviceState {
 
 	set outdoorTemperature(outindoorTemperature) {
 		this._outdoorTemperature = outindoorTemperature;
+        this._reportedState.outdoorTemperature = outindoorTemperature;
 	}
 
 	// STATUSCODE
@@ -218,5 +268,6 @@ export class DeviceState {
 
 	set statusCode(statusCode) {
 		this._statusCode = statusCode;
+        this._reportedState.statusCode = statusCode;
 	}
 }
